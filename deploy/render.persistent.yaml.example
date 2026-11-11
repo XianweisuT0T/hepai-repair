@@ -1,0 +1,19 @@
+# This example uses a PAID service and PAID persistent disk.
+# Do not apply it until the account owner accepts the provider's current charges.
+# Use this file as the Blueprint path, or copy it to render.yaml after that decision.
+services:
+  - type: web
+    name: hepai-repair
+    runtime: docker
+    plan: starter
+    numInstances: 1
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATA_DIR
+        value: /var/lib/hepai/data
+    disk:
+      name: hepai-repair-data
+      mountPath: /var/lib/hepai
+      sizeGB: 1

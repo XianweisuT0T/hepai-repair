@@ -1,0 +1,61 @@
+.exhibit-consent{padding-top:22px;margin-top:22px;border-top:1px solid #a7ad8b80;color:#435e49}
+.exhibit-consent h3{font-size:18px;font-weight:500;margin:0 0 12px;font-family:'Songti SC','SimSun',serif}
+.exhibit-consent p{font-size:13px;line-height:1.85;margin:10px 0}
+.exhibit-consent label{display:flex;align-items:flex-start;gap:10px;font-size:14px;line-height:1.75;padding:10px 0;cursor:pointer}
+.exhibit-consent input{flex:0 0 auto;width:18px;height:18px;margin-top:3px;accent-color:#49664c}
+.exhibit-consent label:has(input:disabled){cursor:default}
+.exhibit-consent small{display:block;font-size:12px;line-height:1.8;color:#53684d}
+.exhibit-consent .exhibit-status{color:#354d39;font-weight:500}
+.exhibit-consent .text-link{min-height:44px;margin-top:8px}
+.conversation-slip{position:relative;margin:24px 0 0;padding:20px 0;border-top:1px dashed #909e7b;color:#344f3e}
+.conversation-slip-paper{position:relative;min-height:185px;overflow:hidden;display:flex;align-items:center;border:1px solid #c8b98e;border-radius:3px;background:linear-gradient(110deg,#f2ebd6 0%,#ebe1c6 68%,#d6c79f 100%);box-shadow:0 6px 16px #31443822,inset 0 0 0 5px #f5eedb}
+.conversation-slip-paper:after{content:'✦';position:absolute;right:14px;top:11px;color:#a79060;font-size:15px}
+.conversation-slip-art{position:absolute;inset:0 0 0 38%;background-position:center 52%;background-size:cover;opacity:.20;filter:sepia(.45);mask-image:linear-gradient(90deg,transparent,#000 45%);pointer-events:none}
+.conversation-slip-copy{position:relative;padding:26px 28px;max-width:80%;z-index:1}
+.conversation-slip-kicker{display:block;margin-bottom:13px;font:10px Georgia,serif;letter-spacing:.14em;color:#7e7a58}
+.conversation-slip p{font-family:'Songti SC','SimSun',serif;font-size:21px;line-height:1.55;margin:0 0 11px;color:#2e493d}
+.conversation-slip small{display:block;font-size:12px;line-height:1.8;color:#53684d}
+.conversation-slip-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:7px}
+.conversation-slip button{min-height:44px;padding:4px 3px;text-decoration:underline;text-underline-offset:4px}
+.tape-audition-status{position:relative;max-width:720px;margin:9px auto 0;color:#e6d7b3;text-align:center;font-size:11px;line-height:1.65}
+.tape-audition-status span{color:#f1e8cf}
+.score-workspace{width:100%;display:grid;grid-template-rows:minmax(220px,1fr) auto;min-height:0;height:100%;gap:12px}
+.score-world-preview{position:relative;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:5px;min-height:0;overflow:hidden;border-radius:8px}
+.score-world-preview>.production-object{height:100%;min-height:0;overflow:hidden}
+.score-world-caption{position:static;margin:0;padding:0 8px 3px;pointer-events:none;color:#e1dbb8;font-size:12px;line-height:1.6}
+.score-workspace .arrangement-board{max-width:none;padding:16px 20px 18px}
+.score-workspace .arrangement-board-header{font-size:16px;margin-bottom:10px}
+.score-workspace .music-tape-bed{padding:12px 14px}
+.score-workspace .music-tape+.music-tape{margin-top:12px;padding-top:12px}
+.score-workspace .track-cell{min-height:68px;gap:4px;padding:13px 4px 7px}
+.score-workspace .track-cell>svg{width:28px;height:28px}
+.score-workspace .tape-listen-controls{margin-top:12px}
+.score-workspace .tape-listen-controls button{min-height:44px;padding:8px 18px}
+.score-workspace .tape-owner>small{display:none}
+.stage-arrange .workbench-object:has(.score-workspace){min-height:500px;padding-top:0}
+.museum-view .site-header .header-note{display:none}
+.shared-view .observe-instruction{margin:6px auto 14px;color:#d6d7b8;font-size:13px;line-height:1.8}
+@media(max-width:850px){.score-workspace{grid-template-rows:minmax(190px,1fr) auto}.score-workspace .arrangement-board{padding:12px}.score-workspace .music-tape{gap:12px}}
+@media(max-width:600px){
+ .stage-arrange .workbench-object:has(.score-workspace){min-height:0;height:auto;padding:0}
+ .score-workspace{height:auto;display:flex;flex-direction:column;gap:6px}
+ .score-world-preview{height:190px;flex-shrink:0;min-height:190px}
+ .score-world-caption{font-size:11px;padding:0 5px 2px;line-height:1.5}
+ .score-workspace .arrangement-board{padding:10px 8px}
+ .score-workspace .arrangement-board-header{font-size:12px;margin-bottom:7px}
+ .score-workspace .music-tape-bed{padding:8px}
+ .score-workspace .music-tape+.music-tape{margin-top:8px;padding-top:8px}
+ .score-workspace .track-cell{min-height:56px;padding:11px 2px 4px}
+ .score-workspace .track-cell>svg{width:23px;height:23px}
+ .score-workspace .tape-listen-controls{margin-top:8px;gap:8px}
+ .score-workspace .tape-listen-controls button{padding:6px 9px;font-size:11px}
+ .exhibit-consent p,.exhibit-consent small,.conversation-slip small{font-size:12px}
+ .conversation-slip-paper{min-height:166px}.conversation-slip-copy{max-width:100%;padding:20px 18px}.conversation-slip p{font-size:18px}.conversation-slip-art{inset:0 0 0 24%;opacity:.13}.conversation-slip-actions{gap:4px}.conversation-slip-actions button{font-size:11px}.tape-audition-status{font-size:10px;padding:0 5px}
+}
+
+/* This selector must outrank the generic workbench viewport loaded by main.tsx.
+   Its measured Canvas height must be the visible grid row, not a tall canvas
+   clipped by the score preview. The caption occupies its own row below it. */
+.score-world-preview>.production-object>.production-viewport{height:100%;aspect-ratio:auto;min-height:0}
+
+.archive-record{padding-bottom:10px;border-bottom:1px solid #a7ad8b60}.archive-record .archive-item{border-bottom:0}.archive-withdraw{border:0;background:none;min-height:44px;padding:0 8px;color:#526246;text-decoration:underline;text-underline-offset:4px;font-size:12px}

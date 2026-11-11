@@ -1,0 +1,20 @@
+.paper-note-editor .conversation-slip-copy{max-width:100%;width:100%;padding:25px 24px}
+.paper-note-editor .conversation-slip-art{opacity:.10;inset:0 0 0 25%}
+.paper-note-editor h3{font:500 20px/1.5 'Songti SC','SimSun',serif;margin:0 0 15px;color:#314b3c}
+.paper-note-editor .conversation-slip-copy>p{font-size:16px;line-height:1.85;margin-bottom:20px}
+.paper-note-editor label{display:flex;justify-content:space-between;font-size:13px;color:#415c47;margin-bottom:9px}
+.paper-note-editor label span{font-size:12px;color:#677655}
+.paper-note-editor textarea{display:block;width:100%;box-sizing:border-box;min-height:98px;padding:11px 12px;border:1px solid #a7ad8c;border-radius:2px;background:#fffdf14d;color:#304b3c;resize:vertical;font:14px/1.8 'Microsoft YaHei',sans-serif;outline-offset:3px;caret-color:#435e49}
+.paper-note-editor textarea::placeholder{color:#687959;opacity:1}
+.paper-note-editor textarea:focus-visible{outline:2px solid #526c4e}
+.paper-note-editor-bottom{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:11px 0 12px}
+.conversation-slip .paper-note-send,.paper-message-dialog .paper-note-send{display:inline-flex;justify-content:space-between;align-items:center;gap:22px;min-height:44px;padding:10px 16px;background:#435e49;color:#f4ecd7;border:1px solid #435e49;border-radius:2px;text-decoration:none;font-size:13px;margin:0;cursor:pointer}
+.paper-note-send:disabled{opacity:.5;cursor:default}.paper-note-send:hover:not(:disabled){background:#334d3b}.paper-note-send:focus-visible{outline:2px solid #aa8c55;outline-offset:3px}
+.paper-note-status:empty{display:none}.conversation-slip .paper-note-status{font-size:13px;line-height:1.7;margin:10px 0 0;color:#3f5c43}
+.paper-note-inbox{margin-top:12px;border-top:1px solid #a6ae8e66;padding-top:7px}.paper-note-inbox>div{display:grid}.paper-note-inbox>div>button{text-align:left;line-height:1.8;color:#435e49;background:transparent;border:0;padding:8px 4px;text-decoration:none}
+.paper-message-dialog{position:fixed;box-sizing:border-box;border:1px solid #c7b78a;background:#eee6cd;color:#304a3b;border-radius:4px;width:min(560px,calc(100vw - 36px));padding:0;box-shadow:0 22px 65px #091c2160;max-height:calc(100dvh - 48px);overflow:auto}
+.paper-message-dialog::backdrop{background:#0c2026bc}
+.paper-message-art{position:absolute;inset:0;pointer-events:none;background-size:cover;background-position:center;opacity:.095}
+.paper-message-content{position:relative;padding:42px 38px}.paper-message-dialog .paper-message-content h2{font:500 25px/1.5 'Songti SC','SimSun',serif;margin:0 0 28px}.paper-message-dialog .paper-message-content .paper-message-text{font:20px/1.95 'Songti SC','SimSun',serif;white-space:pre-wrap;overflow-wrap:anywhere;margin:0 0 30px;min-height:96px}.paper-message-dialog .paper-message-foot{font-size:12px;color:#5d7051;margin:0 0 26px}
+@media(max-width:600px){.paper-note-editor .conversation-slip-copy{padding:20px 17px}.paper-note-editor h3{font-size:19px}.paper-note-editor .conversation-slip-copy>p{font-size:15px}.paper-note-editor textarea{font-size:16px}.paper-message-content{padding:30px 24px}.paper-message-dialog .paper-message-content h2{font-size:23px}.paper-message-dialog .paper-message-content .paper-message-text{font-size:18px}.paper-note-editor-bottom>small{font-size:12px}}
+@media(prefers-reduced-motion:no-preference){.paper-message-dialog[open]{animation:paper-arrival .24s ease-out}@keyframes paper-arrival{from{transform:translateY(12px);opacity:.5}to{transform:translateY(0);opacity:1}}}

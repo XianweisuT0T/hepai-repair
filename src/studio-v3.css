@@ -1,0 +1,20 @@
+.workbench-object>.musicbox-scene[data-view=mechanism],.workbench-object>.musicbox-scene[data-view=winding]{width:100%;max-width:100%;margin:0;filter:drop-shadow(0 12px 16px #061b1c44)}
+.workbench-object>.musicbox-scene[data-view=mechanism] .musicbox-svg,.workbench-object>.musicbox-scene[data-view=winding] .musicbox-svg{min-width:0;width:100%;height:auto}
+.stage-gears .bench-hint h1,.stage-melody .bench-hint h1{max-width:none}
+.retained-ready{padding:11px 12px;border:1px solid #9cad82;background:#cad7b24d;font-size:12px!important;line-height:1.8!important;color:#547747!important;border-radius:3px}
+.arrangement-reopen{font-size:11px;color:#71875b;min-height:44px;margin-top:6px;width:100%;text-align:center}
+.stage-arrange .bench-top{border-color:#aaba8d26}.stage-arrange .bench-count{font-size:11px}
+.work-summary-tracks{margin:12px 0 18px;display:flex;flex-direction:column;gap:7px;font-size:11px;color:#71845b}.work-summary-tracks span{display:flex;align-items:center;gap:7px}.work-summary-tracks b{font-weight:500;color:#59764c}
+.winding-meter.winding-meter-continuous{display:block;height:8px;overflow:hidden;border:1px solid #a3ae8a;border-radius:5px;background:#d8dfc7}
+.winding-meter-continuous>span{display:block;height:100%;min-width:0;border:0;border-radius:inherit;background:linear-gradient(90deg,#9d8956,#d6bb7c);flex:none}
+.launch-readiness .winding-count{font-family:inherit;font-size:11px;white-space:nowrap;color:#627650}
+.wind-step-button[aria-busy=true]{opacity:.8;cursor:progress}
+@media(min-width:851px){.stage-arrange .workbench-object{min-height:380px}.tool-panel:has(.arrangement-tools){align-self:start}}
+@media(max-width:600px){
+ .workbench-object>.musicbox-scene[data-view=mechanism],.workbench-object>.musicbox-scene[data-view=winding]{width:100%;max-width:100%;margin:0}
+ .stage-gears .workbench-object,.stage-swap .workbench-object,.stage-melody .workbench-object{height:clamp(150px,23dvh,195px);min-height:0;flex:0 0 auto;align-items:center}
+ .stage-launch .workbench-object{height:clamp(182px,26dvh,230px);flex:0 0 auto;align-items:center}
+ .stage-arrange .bench-hint{padding-top:7px}.stage-arrange .bench-hint h1{font-size:15px;line-height:1.6}.stage-arrange .workbench-object{height:auto;flex:0 0 auto;padding:7px 0 5px;max-width:none;align-items:stretch}
+ .stage-arrange .bench-top .section-kicker{font-size:7px}.stage-arrange .bench-count{font-size:9px}.stage-arrange .bench-bottom{min-height:26px;height:26px}.stage-arrange .material-label{font-size:7px}.stage-arrange .tool-panel{min-height:0}
+ .stage-launch .bench-hint h1{font-size:16px;line-height:1.6}.launch-panel .launch-role-lead{font-size:11px!important}.launch-readiness>div{padding:7px}.launch-readiness b{font-size:10px}.retained-ready{font-size:11px!important;padding:8px 10px;margin-top:10px!important}.arrangement-reopen{font-size:10px;margin-top:3px;min-height:39px}.launch-panel>.launch-wait-note{font-size:10px!important}.work-summary-tracks{font-size:10px;margin:10px 0 15px;gap:5px}
+}

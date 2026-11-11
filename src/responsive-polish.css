@@ -1,0 +1,116 @@
+/* The demo switcher owns a real grid row, so it never sits over the work. */
+.app.in-room:has(>.workshop){display:grid;grid-template-rows:auto minmax(0,1fr);height:100dvh;min-height:0;overflow:hidden;padding-bottom:0}
+.app.in-room:has(>.workshop):has(>.demo-toolbar){grid-template-rows:auto minmax(0,1fr) auto}
+.app.in-room:has(>.workshop)>.site-header{grid-row:1;flex-shrink:0}
+.app.in-room:has(>.workshop)>.workshop{grid-row:2;width:100%;height:100%;min-height:0;margin:0 auto;align-items:stretch;overflow:hidden}
+.app.in-room:has(>.workshop)>.demo-toolbar{grid-row:3;position:relative;inset:auto;transform:none;justify-content:center;gap:24px;width:100%;max-width:none;min-height:56px;height:auto;margin:0;padding:5px 18px max(5px,env(safe-area-inset-bottom));border-radius:0;border-width:1px 0 0;box-shadow:none}
+.app.in-room:has(>.workshop)>.demo-toolbar button{min-height:44px}
+.workshop>.bench{min-height:0}
+.workshop>.tool-panel{min-height:0;max-height:100%;height:100%;align-self:stretch;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#899c76 #dddcc3;scroll-padding:14px}
+.workshop>.tool-panel>.paper-topline::after{content:'下滑查看更多 ↓';font-family:'Microsoft YaHei',sans-serif;font-size:10px;letter-spacing:0;color:#6b795d;white-space:nowrap}
+/* The cue sits in the header, never over the last row of actual controls. */
+.workshop>.tool-panel::after{position:static;content:'';height:8px;margin:0;background:none}
+.workshop .workbench-object:has(>.production-object),.workshop .workbench-object:has(>.production-object.production-box){min-height:0}
+
+@media(min-width:851px){
+  .app.in-room:has(>.workshop)>.workshop{padding-block:24px}
+  .workshop>.bench{overflow:hidden}
+  .workshop .workbench-object{flex:1 1 auto;min-height:0}
+  .workshop>.tool-panel:has(.gear-preview),.workshop>.tool-panel:has(.stamp-chooser),.workshop>.tool-panel:has(.launch-readiness){max-height:100%}
+}
+
+@media(max-width:850px) and (min-width:601px){
+  .app.in-room:has(>.workshop)>.workshop{grid-template-columns:minmax(0,1fr) minmax(285px,.9fr);grid-template-rows:minmax(0,1fr);gap:16px;padding:16px 18px}
+  .workshop>.bench{overflow:hidden}
+  .workshop .workbench-object{flex:1 1 auto;min-height:0}
+  .workshop>.tool-panel{padding:18px}
+  .workshop .parts-tray{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .workshop .blueprint-list{display:block}
+  .workshop .blueprint-list>button{width:100%;border-right:0;border-bottom:1px dashed #a4b09680}
+}
+
+@media(max-width:600px){
+  .app.in-room:has(>.workshop)>.site-header{height:92px;padding:6px 14px;row-gap:0}
+  .app.in-room:has(>.workshop)>.workshop{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);height:100%;padding:8px 12px;gap:8px}
+  .app.in-room:has(>.workshop)>.demo-toolbar{min-height:56px;padding:5px 14px max(5px,env(safe-area-inset-bottom));gap:10px;justify-content:space-between}
+  .workshop .bench-top{padding-bottom:5px}
+  .workshop .bench-hint{padding-top:5px}
+  .workshop .bench-hint h1{font-size:16px;line-height:1.55}
+  .workshop .bench-bottom{min-height:44px;height:44px;padding:0}
+  .workshop .finish-picker button{min-height:44px}
+  .workshop .shared-messages:empty{display:none}
+  .workshop>.tool-panel{padding:13px 15px;scroll-padding:10px;scrollbar-gutter:stable}
+  .workshop>.tool-panel>.paper-topline{margin-bottom:8px;padding-bottom:6px}
+  .workshop>.tool-panel>.tool-title{margin-bottom:6px;gap:9px}
+  .workshop>.tool-panel>.tool-title h2{font-size:17px;line-height:1.6}
+  .workshop>.tool-panel>p{font-size:12px;line-height:1.65}
+  .stage-gears .workbench-object,.stage-melody .workbench-object{height:clamp(158px,25dvh,204px);flex:0 0 auto}
+  .stage-swap .workbench-object{height:clamp(132px,21dvh,174px);flex:0 0 auto}
+  .stage-launch .workbench-object{height:clamp(158px,24dvh,205px);flex:0 0 auto}
+  .stage-gears .tool-panel>.paper-topline{font-size:0;min-height:20px}
+  .stage-gears .tool-panel>.paper-topline>span{font-size:10px}
+  .stage-gears .tool-panel>.paper-topline::after{font-size:11px}
+  .stage-gears .tool-panel>.tool-title .eyebrow{display:none}
+  .stage-gears .tool-panel .parts-tray{margin-top:8px;gap:7px}
+  .stage-gears .tool-panel .part{min-height:90px;padding:4px 3px 6px}
+  .stage-gears .tool-panel .part .gear-icon{width:58px;height:58px}
+  .stage-gears .tool-panel .part>b{font-size:11px;line-height:1.7}
+  /* With a part selected, the question appears before the tray in normal flow.
+     No sticky bar covers parts or the partner's inspection/response card. */
+  .stage-gears .tool-panel:has(.parts-tray .selected){display:flex;flex-direction:column}
+  .stage-gears .tool-panel:has(.parts-tray .selected)>*{flex-shrink:0}
+  .stage-gears .tool-panel:has(.parts-tray .selected)>.paper-topline{order:0}
+  .stage-gears .tool-panel:has(.parts-tray .selected)>.tool-title{order:1}
+  .stage-gears .tool-panel:has(.parts-tray .selected)>p{order:2}
+  .stage-gears .tool-panel:has(.parts-tray .selected)>.ask-button{order:3;margin:8px 0 0;min-height:48px;background:#d4dcbc;border-color:#92a377}
+  .stage-gears .tool-panel:has(.parts-tray .selected)>.parts-tray{order:4}
+  .stage-gears .tool-panel:has(.parts-tray .selected)>.gear-preview{order:5}
+  .stage-gears .tool-panel:has(.parts-tray .selected)>.helper-actions{order:6}
+  .stage-gears .tool-panel:has(.parts-tray .selected)>.details-text,.stage-gears .tool-panel:has(.parts-tray .selected)>.hint-message{order:7}
+  .stage-gears .tool-panel>.ask-button{min-height:48px}
+}
+
+/* The short-phone budget prioritises a complete first row over duplicate
+   decoration. The mech still has its own camera and 44px slot buttons. */
+@media(max-width:600px) and (max-height:700px){
+  .app.in-room:has(>.workshop)>.site-header{height:88px}
+  .stage-gears .workbench-object,.stage-melody .workbench-object{height:142px}
+  .stage-gears .bench-bottom .material-label,.stage-melody .bench-bottom .material-label{display:none}
+  .stage-gears .bench-bottom,.stage-melody .bench-bottom{justify-content:flex-end}
+  .stage-gears .tool-panel>.paper-topline{display:flex;margin-bottom:5px;padding-bottom:4px;min-height:18px}
+  .stage-gears .tool-panel>.tool-title{margin-bottom:4px}
+  .stage-gears .tool-panel .parts-tray{margin-top:6px}
+  .stage-gears .tool-panel .helper-actions{margin-top:10px}
+}
+
+/* A short landscape keeps the model and tools side by side instead of
+   stacking a complete viewport above a second, unreachable tool viewport. */
+@media(min-width:601px) and (max-height:600px){
+  .app.in-room:has(>.workshop)>.site-header{height:72px}
+  .app.in-room:has(>.workshop)>.workshop{grid-template-columns:minmax(0,1fr) minmax(300px,.9fr);padding:10px 16px;gap:14px}
+  .workshop .bench-hint{padding-top:7px}
+  .workshop .bench-hint h1{font-size:17px;line-height:1.5}
+  .workshop .bench-top{padding-bottom:6px}
+  .workshop>.tool-panel{padding:14px}
+  .stage-gears .tool-panel>.paper-topline{font-size:0;min-height:18px;margin-bottom:6px;padding-bottom:5px}
+  .stage-gears .tool-panel>.paper-topline>span{font-size:10px}
+  .stage-gears .tool-panel>.paper-topline::after{font-size:11px}
+  .stage-gears .tool-panel>.tool-title{margin-bottom:6px}
+  .stage-gears .tool-panel>.tool-title .eyebrow{display:none}
+  .stage-gears .tool-panel>.tool-title h2{font-size:17px;line-height:1.55}
+  .stage-gears .tool-panel>p{font-size:12px;line-height:1.65}
+  .stage-gears .tool-panel .parts-tray{margin-top:8px;gap:7px}
+  .stage-gears .tool-panel .part{min-height:90px;padding:4px 3px 6px}
+  .stage-gears .tool-panel .part .gear-icon{width:58px;height:58px}
+  .stage-gears .tool-panel:has(.parts-tray .selected){display:flex;flex-direction:column}
+  .stage-gears .tool-panel:has(.parts-tray .selected)>*{flex-shrink:0}
+  .stage-gears .tool-panel:has(.parts-tray .selected)>.paper-topline{order:0}
+  .stage-gears .tool-panel:has(.parts-tray .selected)>.tool-title{order:1}
+  .stage-gears .tool-panel:has(.parts-tray .selected)>p{order:2}
+  .stage-gears .tool-panel:has(.parts-tray .selected)>.ask-button{order:3;margin:8px 0 0;min-height:48px}
+  .stage-gears .tool-panel:has(.parts-tray .selected)>.parts-tray{order:4}
+  .stage-gears .tool-panel:has(.parts-tray .selected)>.gear-preview{order:5}
+  .stage-gears .tool-panel:has(.parts-tray .selected)>.helper-actions{order:6}
+  .stage-gears .tool-panel:has(.parts-tray .selected)>.details-text,.stage-gears .tool-panel:has(.parts-tray .selected)>.hint-message{order:7}
+  .app.in-room:has(>.workshop)>.demo-toolbar{min-height:54px}
+}

@@ -1,0 +1,23 @@
+/* Static geometry is SVG; these wrappers add only a few pixels of relative depth. */
+.musicbox-scene{--scene-x:0px;--scene-y:0px;--tilt-x:0deg;--tilt-y:0deg}
+.musicbox-svg [data-depth-layer]{transform:translate(calc(var(--scene-x,0px) * var(--layer-depth,0)),calc(var(--scene-y,0px) * var(--layer-depth,0)))}
+.musicbox-scene[data-parallax=on]>.musicbox-svg,.musicbox-scene[data-parallax=engaged]>.musicbox-svg{transform:perspective(1400px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg));transform-origin:50% 62%}
+.musicbox-scene.is-mechanism-view>.musicbox-svg{transform-origin:50% 55%}
+.gear-lift{transition:transform 180ms ease-out}
+.installed-gear{filter:none}
+.installed-gear .gear-motion{animation:mb-gear-seat 520ms cubic-bezier(.22,.72,.3,1) both}
+.paper-motion{transform-box:fill-box;transform-origin:50% 100%}
+.is-playing .paper-motion{animation:mb-paper-theatre 8s ease-in-out 1 both}
+.repair-ticket{box-shadow:2px 4px 5px #071a192b,8px 14px 21px #071a1920}
+@keyframes mb-gear-seat{0%{transform:translateY(-9px) rotate(-5deg);opacity:.72}70%{transform:translateY(-1px) rotate(0);opacity:1}100%{transform:translateY(0) rotate(0);opacity:1}}
+@keyframes mb-paper-theatre{0%,100%{transform:rotate(0) scaleX(1)}25%{transform:rotate(.6deg) translateY(-.6px) scaleX(.97)}50%{transform:rotate(-.4deg) scaleX(.93)}75%{transform:rotate(.5deg) translateY(-.4px) scaleX(.97)}}
+@media(hover:hover) and (pointer:fine){
+ .mechanism-slot:has(.slot-hit:not([aria-disabled=true])):hover .gear-lift,.mechanism-slot:has(.slot-hit:focus-visible) .gear-lift{transform:translateY(-2.5px)}
+ .mechanism-slot:has(.slot-hit:not([aria-disabled=true])):hover .slot-hover-ring{stroke:#e5cf98;opacity:.72}
+ .winding-key.can-wind:hover .crank-handle{filter:brightness(1.07)}
+}
+@media(prefers-reduced-motion:reduce){
+ .musicbox-scene>.musicbox-svg,.musicbox-svg [data-depth-layer],.gear-lift{transform:none!important}
+ .is-playing .paper-motion,.installed-gear .gear-motion{animation:none!important}
+ .gear-lift{transition:none!important}
+}

@@ -1,0 +1,25 @@
+.completion-summary{padding:4px 0 22px;border-bottom:1px solid #a5b08d60;margin-bottom:20px;text-align:left}
+.completion-status{display:flex;align-items:center;gap:9px;color:#57704e;font-size:12px;letter-spacing:.04em}
+.completion-status svg{width:21px;height:21px;fill:none;stroke:#8b8450;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.completion-status small{margin-left:auto;font-size:10px;letter-spacing:0;color:#748164}
+.completion-summary h2.work-title{font-family:'Songti SC','SimSun',serif;font-size:28px!important;line-height:1.55!important;font-weight:500;letter-spacing:.04em;color:#304f40;margin:19px 0 9px!important;overflow-wrap:anywhere;text-align:left}
+.completion-sound{font-size:12px!important;line-height:1.9!important;color:#586c51!important;margin:0!important}
+.completion-caption{display:flex;justify-content:space-between;gap:12px;margin-top:13px;color:#788268;font-size:10px;line-height:1.8;flex-wrap:wrap}
+.word-picker .word-saved-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:7px}
+.word-picker .word-saved-row small{font-size:11px;line-height:1.8;color:#627456;margin:0}
+.word-picker .word-clear{flex-shrink:0;font-size:11px;min-height:44px;padding:7px 0 7px 8px;border:0;border-bottom:1px solid #b2b79566;background:transparent;color:#6a775c;white-space:nowrap}
+.word-picker .word-clear:disabled{opacity:.45}
+.word-picker .word-save:disabled{background:#d8dcc8;color:#78866b;border-color:#b5bda3;opacity:1}
+.stage-complete .word-picker{padding-top:0;border-top:0}
+.stage-complete .completion-summary{margin-bottom:0}
+.stage-complete .completion-actions{display:flex;flex-direction:row;margin:16px 0 22px;gap:8px}
+.stage-complete .completion-actions>button{flex:1;min-width:0;min-height:48px;padding:0 12px;gap:8px;font-size:12px}
+.stage-complete .repair-recap{border-top:1px dashed #acb59891;margin-top:18px;padding-top:18px}
+.session-unavailable{max-width:700px;margin:auto;text-align:center}.session-unavailable>p{max-width:39em}
+.network-banner .recovery-retry{min-height:44px;margin-left:12px;border:1px solid #9eaa8266;border-radius:3px;padding:5px 13px;background:#2b493d;color:#e2e4cb;font-size:12px}
+@media(max-width:600px){
+ .completion-summary{padding-bottom:14px;margin-bottom:13px}.completion-status{font-size:11px;gap:7px}.completion-status small{font-size:10px}.completion-status svg{width:18px;height:18px}
+ .completion-summary h2.work-title{font-size:25px!important;margin:12px 0 6px!important}.completion-sound{font-size:11px!important;line-height:1.8!important}.completion-caption{font-size:10px;margin-top:8px;gap:3px 10px}
+ .word-picker .word-saved-row{gap:7px}.word-picker .word-saved-row small{font-size:10px}.word-picker .word-clear{font-size:10px}.stage-complete .completion-actions{margin:12px 0 18px;flex-direction:row}.stage-complete .completion-actions>button{font-size:11px;padding:0 10px;gap:7px}
+ .stage-complete .stamp-chooser{padding-top:15px;margin-top:15px}.stage-complete .repair-recap{margin-top:14px;padding-top:14px}
+}
