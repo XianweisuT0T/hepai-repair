@@ -1,0 +1,25 @@
+.dialog.collaboration-entry { width: 520px; display: flex; flex-direction: column; overflow: hidden; }
+.collaboration-content { overflow-y: auto; min-height: 0; padding-right: 4px; }
+.collaboration-entry h2 { margin: 0 24px 12px 0; }
+.collaboration-entry .collaboration-intro { margin: 0 0 22px; }
+.collaboration-modes { display: flex; gap: 10px; margin-bottom: 18px; }
+.collaboration-entry .collaboration-modes button { flex: 1; padding-inline: 14px; color: #354b3c; border-color: #89977b; font-size: 14px; }
+.dialog.collaboration-entry .collaboration-modes button[aria-pressed="true"]:not(:disabled) { color: #f4ecd6; background: #3d5546; border-color: #3d5546; }
+.collaboration-form { display: grid; gap: 12px; margin-bottom: 22px; }
+.collaboration-entry .collaboration-form p { color: #4b5b45; font-size: 14px; line-height: 1.8; }
+.collaboration-form label { color: #354b3c; font-size: 14px; }
+.collaboration-form input { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid #8b997c; border-radius: 3px; background: #eee9d7; color: #45543f; font: inherit; }
+.collaboration-form input::placeholder { color: #5c6851; }
+.collaboration-entry .collaboration-form button:disabled { opacity: 1; color: #626c55; background: #d6dac4; border-color: #a2ab8e; cursor: not-allowed; }
+.collaboration-status { padding-top: 18px; border-top: 1px solid #9ca68b; }
+.collaboration-status h3 { margin: 0 0 8px; font-size: 15px; font-weight: 600; color: #354b3c; }
+.collaboration-entry .collaboration-status p { font-size: 14px; color: #4b5b45; line-height: 1.85; margin: 0 0 10px; }
+.collaboration-entry .collaboration-demo { width: 100%; flex-shrink: 0; justify-content: space-between; margin-top: 12px; font-size: 14px; }
+.collaboration-entry button:focus-visible, .collaboration-entry input:focus-visible { outline: 2px solid #3d5546; outline-offset: 3px; }
+@media (max-width: 560px) {
+  .collaboration-entry { padding: 28px 22px; }
+  .collaboration-entry .collaboration-modes button { font-size: 13px; padding-inline: 8px; }
+  .collaboration-entry .collaboration-intro, .collaboration-entry .collaboration-form p, .collaboration-entry .collaboration-status p { font-size: 14px; }
+  .collaboration-modes { margin-bottom: 14px; }
+  .collaboration-form { margin-bottom: 18px; }
+}
