@@ -114,3 +114,27 @@
   .stage-gears .tool-panel:has(.parts-tray .selected)>.details-text,.stage-gears .tool-panel:has(.parts-tray .selected)>.hint-message{order:7}
   .app.in-room:has(>.workshop)>.demo-toolbar{min-height:54px}
 }
+
+/* The music stage and both editable tapes exceed a phone's available height.
+   Scroll the whole workspace, with model, tapes and tools in normal flow.
+   The header and role switcher keep their own rows outside this scrollport. */
+@media(max-width:600px){
+  .app.in-room>.workshop.stage-arrange{
+    display:block;
+    height:100%;
+    min-height:0;
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior-y:contain;
+    scroll-padding:12px;
+  }
+  .app.in-room>.workshop.stage-arrange>.tool-panel{
+    height:auto;
+    max-height:none;
+    min-height:0;
+    margin-block:12px 8px;
+    align-self:start;
+    overflow:visible;
+    overscroll-behavior:auto;
+  }
+}
