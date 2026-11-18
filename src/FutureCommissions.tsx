@@ -1,5 +1,6 @@
 import { Component, Suspense, lazy, useEffect, useRef, useState, type ReactNode } from 'react';
 import brandEmblem from './assets/hepai-emblem-v2.png';
+import PrismLanternCommission from './PrismLanternCommission';
 import './commissions.css';
 
 const StarInstrumentViewer=lazy(()=>import('./commissions/StarInstrumentViewer'));
@@ -40,7 +41,7 @@ export default function FutureCommissions({standalone=false}:{standalone?:boolea
   </section>;
 }
 
-export function ConceptPreviewPage(){
-  useEffect(()=>{const before=document.title;document.title='合拍星仪 · 概念试作 | 合拍修理铺';return()=>{document.title=before;};},[]);
-  return <div className="app concept-preview-page"><header className="site-header"><a className="brand concept-brand" href={import.meta.env.BASE_URL}><img className="brand-emblem" src={brandEmblem} alt="" width="48" height="48"/><span>合拍修理铺<small>HEPAI REPAIR</small></span></a><a className="concept-return" href={import.meta.env.BASE_URL}>回到修理铺 <span aria-hidden="true">↗</span></a></header><main><FutureCommissions standalone/></main></div>;
+export function ConceptPreviewPage({model='star'}:{model?:'star'|'prism'}){
+  useEffect(()=>{const before=document.title;document.title=`${model==='prism'?'合拍棱灯':'合拍星仪'} · 概念试作 | 合拍修理铺`;return()=>{document.title=before;};},[model]);
+  return <div className="app concept-preview-page"><header className="site-header"><a className="brand concept-brand" href={import.meta.env.BASE_URL}><img className="brand-emblem" src={brandEmblem} alt="" width="48" height="48"/><span>合拍修理铺<small>HEPAI REPAIR</small></span></a><a className="concept-return" href={import.meta.env.BASE_URL}>回到修理铺 <span aria-hidden="true">↗</span></a></header><main>{model==='prism'?<PrismLanternCommission standalone/>:<FutureCommissions standalone/>}</main></div>;
 }

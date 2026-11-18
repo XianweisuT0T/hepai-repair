@@ -17,5 +17,6 @@ class LabRouteBoundary extends React.Component<{children:React.ReactNode},{faile
 const basePath=import.meta.env.BASE_URL.replace(/\/$/,'');
 const routePath=(location.pathname.startsWith(`${basePath}/`)?location.pathname.slice(basePath.length):location.pathname).replace(/\/$/,'');
 const isStarConcept=routePath==='/concept/star-instrument';
+const isPrismConcept=routePath==='/concept/prism-lantern';
 const is3DLab=routePath==='/lab/music-box-3d';
-createRoot(document.getElementById('root')!).render(<React.StrictMode>{isStarConcept?<ConceptPreviewPage/>:is3DLab?<LabRouteBoundary><Suspense fallback={<main className="empty-view"><h1>正在打开三维检修台…</h1><p>首次载入本地模型与渲染器。</p><a className="secondary" href={import.meta.env.BASE_URL}>返回原版</a></main>}><MusicBox3DLab/></Suspense></LabRouteBoundary>:<App/>}</React.StrictMode>);
+createRoot(document.getElementById('root')!).render(<React.StrictMode>{isStarConcept||isPrismConcept?<ConceptPreviewPage model={isPrismConcept?'prism':'star'}/>:is3DLab?<LabRouteBoundary><Suspense fallback={<main className="empty-view"><h1>正在打开三维检修台…</h1><p>首次载入本地模型与渲染器。</p><a className="secondary" href={import.meta.env.BASE_URL}>返回原版</a></main>}><MusicBox3DLab/></Suspense></LabRouteBoundary>:<App/>}</React.StrictMode>);

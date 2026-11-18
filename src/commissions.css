@@ -14,3 +14,17 @@
 .concept-brand small{font-size:11px;letter-spacing:.08em}
 .app>.future-commission{max-width:none;margin-inline:5.2%;padding-inline:0}
 @media(max-width:600px){.app>.future-commission{margin-inline:25px}}
+
+.prism-viewer-frame{background:radial-gradient(ellipse at 48% 52%,#4c543d75 0%,transparent 72%)}
+.prism-control-groups{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-bottom:14px}
+.prism-choice h3{margin:0 0 9px;font:500 17px/1.5 'Songti SC','SimSun',serif;color:#e1d3ad}
+.prism-choice .commission-chart-controls button{display:flex;align-items:center;justify-content:center;gap:7px;font-size:14px}
+.prism-swatch{display:inline-block;width:10px;height:10px;flex:none;border:1px solid #10292280;border-radius:50%}
+.prism-controls-footer>div{display:flex;gap:14px}
+.prism-controls-footer button{min-height:44px;white-space:nowrap}
+@media(max-width:600px){
+  .prism-commission .prism-viewer-frame{height:clamp(295px,92vw,390px)}
+  .prism-control-groups{grid-template-columns:1fr;gap:12px}
+  .prism-controls-footer{flex-wrap:wrap;align-items:center;gap:0 12px}
+  .prism-controls-footer small{flex:1 1 100%;max-width:none}
+}
