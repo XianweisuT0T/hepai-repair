@@ -25,10 +25,9 @@ async page => {
       await p.screenshot({ path: `output/playwright/upgrade-shelf-${width}.png`, fullPage: true });
       await p.getByRole('button', { name: '点击开启声音', exact: true }).click();
       for (const id of ['moon-forest', 'star-letter', 'morning-prelude']) {
-        await p.getByTestId(`curated-select-${id}`).click();
-        check(await p.getByTestId(`curated-select-${id}`).getAttribute('aria-pressed') === 'true', 'Exhibit selection missing');
-        await p.locator('.museum-feature-object img').evaluate(img => img.decode());
-        check(await p.locator('.museum-feature-object img').evaluate(img => img.naturalWidth > 0), 'Exhibit render missing');
+        const exhibit = p.getByTestId(`curated-card-${id}`);
+        await exhibit.locator('img').evaluate(img => img.decode());
+        check(await exhibit.locator('img').evaluate(img => img.naturalWidth > 0), 'Exhibit render missing');
         await p.getByTestId(`curated-open-${id}`).click();
         await p.waitForFunction(() => document.querySelector('[data-testid="production-canvas"]')?.dataset.webgl === 'ready');
         check(await p.locator('canvas').count() === 1, 'Viewer must use only one renderer');

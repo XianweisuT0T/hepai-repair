@@ -102,7 +102,6 @@ export default function Museum({ onBack, onCreate, onSelect, onPersonalWorks, cr
   const [works, setWorks] = useState<PublicWork[]>([]);
   const [attempt, setAttempt] = useState(0);
   const [curated, setCurated] = useState<CuratedExhibit | null>(null);
-  const [selected, setSelected] = useState(CURATED_EXHIBITS[0]);
   const browsePosition = useRef(0);
   const stop = useRef(playback.onStop);
   stop.current = playback.onStop;
@@ -148,28 +147,23 @@ export default function Museum({ onBack, onCreate, onSelect, onPersonalWorks, cr
     </header>
 
     <section className="museum-curated" aria-labelledby="curated-heading">
-      <h2 id="curated-heading" className="museum-section-label">选一段旋律，慢慢听</h2>
-      <ul className="museum-selections" aria-label="选择策展示例">
-        {CURATED_EXHIBITS.map(exhibit => <li key={exhibit.id} data-testid={`curated-card-${exhibit.id}`}>
-          <button type="button" data-testid={`curated-select-${exhibit.id}`} aria-pressed={selected.id === exhibit.id} onClick={() => setSelected(exhibit)}>
-            <StampIcon stamp={exhibit.stamps.A} size={23} /><span>{exhibit.title}</span>
+      <div className="museum-gallery-heading">
+        <h2 id="curated-heading">在这里，听见不同的合拍</h2>
+        <p>三件策展示例 · 非真实用户共创作品</p>
+      </div>
+      <ul className="museum-display-shelf">
+        {CURATED_EXHIBITS.map(exhibit => <li className="museum-display" key={exhibit.id} data-testid={`curated-card-${exhibit.id}`}>
+          <button type="button" className="museum-display-object" onClick={() => openCurated(exhibit)} aria-label={`转着看看：${exhibit.title}`}>
+            <img src={exhibitImages[exhibit.id]} width="900" height="603" alt={`${exhibit.title}：木质音乐盒里的月亮、森林与黄铜机芯`} />
           </button>
+          <div className="museum-display-caption">
+            <h3><StampIcon stamp={exhibit.stamps.A} size={21} />{exhibit.title}<StampIcon stamp={exhibit.stamps.B} size={21} /></h3>
+            <p className="museum-display-material">{exhibit.finish === 'walnut' ? '胡桃木' : '樱桃木'} · 黄铜 / {exhibit.score.tempo === 'slow' ? '舒缓' : '轻快'}</p>
+            <p className="museum-display-description">{exhibit.description}</p>
+            <button type="button" className="museum-display-open" data-testid={`curated-open-${exhibit.id}`} onClick={() => openCurated(exhibit)}>欣赏与试听 <DirectionIcon /></button>
+          </div>
         </li>)}
       </ul>
-      <div className="museum-feature">
-        <button type="button" className="museum-feature-object" onClick={() => openCurated(selected)} aria-label={`转着看看：${selected.title}`}>
-          <img key={selected.id} src={exhibitImages[selected.id]} width="900" height="603" alt={`${selected.title}：木质音乐盒里的月亮、森林与黄铜机芯`} />
-          <span>转着看看 <DirectionIcon /></span>
-        </button>
-        <article className="museum-feature-caption" aria-live="polite" aria-atomic="true">
-          <h3>{selected.title}</h3>
-          <p className="museum-feature-description">{selected.description}</p>
-          <p className="museum-feature-material">{selected.finish === 'walnut' ? '胡桃木' : '樱桃木'} · 黄铜 / {selected.score.tempo === 'slow' ? '舒缓' : '轻快'}</p>
-          <div className="museum-score"><Track label="A" track={selected.score.tracks.A} /><Track label="B" track={selected.score.tracks.B} /></div>
-          <button type="button" className="museum-primary museum-feature-open" data-testid={`curated-open-${selected.id}`} onClick={() => openCurated(selected)}>欣赏与试听 <DirectionIcon /></button>
-          <p className="museum-example-note">策展示例 · 非真实用户共创作品</p>
-        </article>
-      </div>
     </section>
     <h2 className="museum-community-title">共同作品展柜</h2>
 
