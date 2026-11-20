@@ -119,7 +119,7 @@
    Scroll the whole workspace, with model, tapes and tools in normal flow.
    The header and role switcher keep their own rows outside this scrollport. */
 @media(max-width:600px){
-  .app.in-room>.workshop:is(.stage-arrange,.stage-complete){
+  .app.in-room>.workshop:is(.stage-melody,.stage-swap,.stage-arrange,.stage-complete){
     display:block;
     height:100%;
     min-height:0;
@@ -128,7 +128,7 @@
     overscroll-behavior-y:contain;
     scroll-padding:12px;
   }
-  .app.in-room>.workshop:is(.stage-arrange,.stage-complete)>.tool-panel{
+  .app.in-room>.workshop:is(.stage-melody,.stage-swap,.stage-arrange,.stage-complete)>.tool-panel{
     height:auto;
     max-height:none;
     min-height:0;
@@ -137,4 +137,38 @@
     overflow:visible;
     overscroll-behavior:auto;
   }
+}
+/* Sound settings remain reachable on narrow screens and have an explicit close action. */
+.sound-popover-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.sound-popover-actions button{min-height:44px;font-size:13px;color:#304a3b;border-color:#7b906c}
+.lobby-next-role{width:100%;justify-content:space-between;margin-top:10px}
+@media(max-width:600px){
+  .site-header .sound-label{display:inline-flex;font-size:11px;gap:4px;min-height:44px;padding:4px}
+  .site-header .sound-control{gap:0}
+  .site-header .header-actions{gap:4px}
+  .site-header .sound-popover{position:fixed;top:64px;right:12px;width:min(290px,calc(100vw - 24px));max-height:calc(100dvh - 100px);overflow:auto;box-sizing:border-box;padding:16px;z-index:60}
+  .sound-popover label{font-size:14px}.sound-popover input{flex:1;min-width:0;min-height:44px}.sound-popover p{font-size:13px;line-height:1.7}
+  .app.in-room:has(>.lobby){padding-bottom:72px}
+  .lobby{padding:16px 16px 22px;gap:16px}
+  .lobby-scene h1{font-size:21px;margin:8px 0}
+  .lobby-scene>.production-object{height:220px;min-height:0}
+  .lobby .invite-panel{padding:20px}
+  .lobby .invite-panel>p{font-size:13px;line-height:1.75;color:#425841}
+  .lobby .role-pair small,.lobby .role-pair i{font-size:12px;color:#425841}
+  .lobby .role-pair small{max-width:none}
+  .lobby-ready>small{font-size:12px;color:#425841}
+  .workshop .helper-actions button,.workshop .audition,.workshop .timbre-choices>button,.workshop .phrase-row button{font-size:13px;min-height:44px}
+  .workshop .tool-panel .details-text{font-size:13px!important;color:#425841}
+  .workshop .tool-panel>p,.workshop .launch-panel p,.workshop .swap-panel p,.workshop .performance-panel p{font-size:13px;color:#425841;line-height:1.75}
+  .workshop .blueprint-list b,.workshop .blueprint-list small,.workshop .note-piece b,.workshop .timbre-area .eyebrow,.workshop .ask-button{font-size:13px}
+  .workshop .blueprint-list small,.workshop .timbre-area .eyebrow small{color:#425841}
+  .workshop .timbre-area .eyebrow small{font-size:12px;display:block;margin:3px 0 0}
+  .workshop .parts-tray .part>b{font-size:12px;color:#425841}
+  .workshop .production-click-alternatives button{font-size:12px}
+  .dialog{max-height:calc(100dvh - 36px);overflow-y:auto;overscroll-behavior:contain}
+  .dialog p{font-size:14px;line-height:1.75}.dialog input,.dialog textarea,.dialog select{font-size:16px}
+}
+@media(max-width:370px){
+  .site-header .sound-label{font-size:10px}
+  .site-header .icon-button{width:32px;min-width:32px}
 }
