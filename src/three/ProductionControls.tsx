@@ -50,7 +50,7 @@ export default function ProductionControls({props,controlsRef,dragging,moving,ho
     if(host.current){host.current.dataset.cameraMoving=String(value);host.current.dataset.cameraTransitioning=String(value);}
     if(moving.current!==value){moving.current=value;live.current.onCameraMoving?.(value);}
   };
-  const observing=()=>live.current.mode==='observe'&&(live.current.stage==='preview'||live.current.stage==='performance'||live.current.stage==='complete');
+  const observing=()=>!live.current.pageScroll&&live.current.mode==='observe'&&(live.current.stage==='preview'||live.current.stage==='performance'||live.current.stage==='complete');
   const apply=(pose:Pose)=>{
     const controls=controlsRef.current;if(!controls)return;
     camera.position.copy(pose.position);controls.target.copy(pose.target);
@@ -100,6 +100,11 @@ export default function ProductionControls({props,controlsRef,dragging,moving,ho
     else finish(target);
     invalidate();
   },[props.mode,props.view,props.stage,props.role,props.viewRevision,props.roomKey,props.cameraPreparing,props.reduceMotion,size.width,size.height,camera,controlsRef,dragging,invalidate]);
+  useEffect(()=>{
+    // OrbitControls sets touch-action itself. Restore browser scrolling in the inline mobile view.
+    gl.domElement.style.touchAction=props.pageScroll?'pan-y pinch-zoom':'none';
+    if(controlsRef.current)controlsRef.current.enabled=observing()&&!moving.current&&!dragging.current;
+  },[props.pageScroll,gl,controlsRef,dragging,moving]);
   useFrame(()=>{
     const controls=controlsRef.current;if(!controls)return;
     const active=motion.current;

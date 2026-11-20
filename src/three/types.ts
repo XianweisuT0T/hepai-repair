@@ -7,6 +7,7 @@ export interface CollaborativeSceneProps {
   role?: Role;
   previewState: 'unrepaired' | 'restored';
   cameraPreparing?: boolean;
+  pageScroll?: boolean;
   view: 'box' | 'mechanism' | 'winding';
   installedGearMap: Partial<Record<string, Gear>>;
   gears: Gear[];

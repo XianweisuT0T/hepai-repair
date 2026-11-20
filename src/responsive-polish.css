@@ -115,11 +115,11 @@
   .app.in-room:has(>.workshop)>.demo-toolbar{min-height:54px}
 }
 
-/* The arrangement and completion controls can exceed a phone's available height.
+/* Workshop controls can exceed a phone's available height at every stage.
    Scroll the whole workspace, with model, tapes and tools in normal flow.
    The header and role switcher keep their own rows outside this scrollport. */
 @media(max-width:600px){
-  .app.in-room>.workshop:is(.stage-melody,.stage-swap,.stage-arrange,.stage-complete){
+  .app.in-room:has(>.workshop)>.workshop{
     display:block;
     height:100%;
     min-height:0;
@@ -128,7 +128,7 @@
     overscroll-behavior-y:contain;
     scroll-padding:12px;
   }
-  .app.in-room>.workshop:is(.stage-melody,.stage-swap,.stage-arrange,.stage-complete)>.tool-panel{
+  .app.in-room:has(>.workshop)>.workshop>.tool-panel{
     height:auto;
     max-height:none;
     min-height:0;

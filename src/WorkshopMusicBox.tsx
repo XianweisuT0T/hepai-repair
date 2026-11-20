@@ -1,4 +1,5 @@
 import { Component, Suspense, lazy, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import MusicBox, { type MusicBoxProps } from './MusicBox';
 import type { ArrangementVersion, Gear, Role, Work } from '../shared/types';
 import type { CollaborativeSceneProps } from './three/types';
@@ -48,9 +49,28 @@ export default function WorkshopMusicBox(props:WorkshopMusicBoxProps){
   // Assembly keeps one predictable view; performances and finished works can be explored.
   const mode=stage==='preview'||stage==='performance'||stage==='complete'?'observe':'assemble';
   const [reduceMotion,setReduceMotion]=useState(()=>matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const [mobile,setMobile]=useState(()=>matchMedia('(pointer: coarse), (max-width: 600px)').matches);
+  const [expanded,setExpanded]=useState(false);
+  const expandedDialog=useRef<HTMLDialogElement>(null);
+  const expandButton=useRef<HTMLButtonElement>(null);
+  useEffect(()=>{
+    const query=matchMedia('(pointer: coarse), (max-width: 600px)');
+    const changed=()=>{setMobile(query.matches);if(!query.matches)setExpanded(false);};
+    query.addEventListener('change',changed);return()=>query.removeEventListener('change',changed);
+  },[]);
+  useEffect(()=>{setExpanded(false);},[stage,roomKey]);
+  useEffect(()=>{
+    if(!expanded)return;
+    const dialog=expandedDialog.current;
+    if(!dialog)return;
+    dialog.showModal();
+    const overflow=document.body.style.overflow;
+    document.body.style.overflow='hidden';
+    return()=>{dialog.close();document.body.style.overflow=overflow;expandButton.current?.focus();};
+  },[expanded]);
   const lidTimer=useRef<ReturnType<typeof setTimeout>|undefined>(undefined);
   const progress=useWindingProgress(props.winding??0,props.windingAt,props.windingDurationMs,props.windingPausedAt);
-  const failed=useCallback((message:string)=>{setError(message);setReady(false);setCameraMoving(false);setCrankHint('');},[]);
+  const failed=useCallback((message:string)=>{setError(message);setExpanded(false);setReady(false);setCameraMoving(false);setCrankHint('');},[]);
   const onReady=useCallback(()=>setReady(true),[]);
   const onCrankHint=useCallback((message:string|null)=>setCrankHint(message||''),[]);
   useEffect(()=>{
@@ -65,7 +85,7 @@ export default function WorkshopMusicBox(props:WorkshopMusicBoxProps){
   },[roomKey,stage]);
   useEffect(()=>()=>clearTimeout(lidTimer.current),[]);
   function choose3D(value:boolean){
-    setUse3D(value);setError('');setReady(false);setCameraMoving(false);if(value)setRetry(current=>current+1);
+    setExpanded(false);setUse3D(value);setError('');setReady(false);setCameraMoving(false);if(value)setRetry(current=>current+1);
     try{localStorage.setItem(RENDER_KEY,value?'3d':'2d');}catch{/* The current view still changes if browser storage is unavailable. */}
     const url=new URL(location.href);url.searchParams.set('render',value?'3d':'2d');history.replaceState(null,'',url);
   }
@@ -84,7 +104,7 @@ export default function WorkshopMusicBox(props:WorkshopMusicBoxProps){
   const delivered=role==='guide'&&stage==='gears'?props.marks?.findLast(mark=>!!mark.preview)?.preview:undefined;
   const visiblePart=gears.find(item=>item.id===props.selectedGear)??gears.find(item=>item.id===delivered)??null;
   const scene:CollaborativeSceneProps={
-    stage,roomKey,role,view,previewState,cameraPreparing:props.cameraPreparing,installedGearMap,gears,notes:[...displayNotes],finish:props.finish??'walnut',
+    stage,roomKey,role,view,previewState,cameraPreparing:props.cameraPreparing,pageScroll:mobile&&!expanded&&stage!=='launch',installedGearMap,gears,notes:[...displayNotes],finish:props.finish??'walnut',
     selectedGear:visiblePart,selectedNote:props.selectedNote??null,
     score:props.score,playbackStartedAt:props.playbackStartedAt,playbackBeatMs:props.playbackBeatMs,playbackBeats:props.playbackBeats,playbackLoops:props.playbackLoops,
     marks:props.marks??[],playing:!!props.playing,highlightNote:props.highlightNote??null,
@@ -101,9 +121,7 @@ export default function WorkshopMusicBox(props:WorkshopMusicBoxProps){
     setLidMoving(true);setLidOpen(current=>!current);clearTimeout(lidTimer.current);
     lidTimer.current=setTimeout(()=>setLidMoving(false),reduceMotion?50:900);
   }
-  return <div className={`production-object production-${view}${is3D?' has-webgl':' has-svg'}`} data-view={view} data-render-mode={is3D?ready?'3d':'loading':'2d'} data-lid-open={lidOpen} data-lid-moving={lidMoving} data-camera-moving={cameraMoving} data-camera-mode={mode} role="group" aria-label={stage==='preview'?previewState==='unrepaired'?'音乐盒待修预览':'音乐盒外观预览':'三维音乐盒工作台'}>
-    {is3D?<>
-      <div className="production-viewport">
+  const viewport=<div className="production-viewport">
         <ModelBoundary key={retry} onFailure={failed}><Suspense fallback={<div className="production-loading" role="status">正在打开音乐盒…</div>}><CollaborativeMusicBox {...scene}/></Suspense></ModelBoundary>
         <div className="production-camera-tools" aria-label="音乐盒视角与盒盖">
           <button className="production-lid-button" data-testid="production-toggle-lid" disabled={lidMoving||cameraMoving||stage==='performance'||!!(props.windingAt&&(props.winding??0)<4)} onClick={toggleLid}>
@@ -120,7 +138,12 @@ export default function WorkshopMusicBox(props:WorkshopMusicBoxProps){
         {!lidOpen&&(stage==='gears'||stage==='melody')&&<span className="production-lid-hint" role="status">打开盒盖后继续装配</span>}
         {cameraMoving&&<span className="production-camera-hint" role="status">{stage==='gears'?'把机芯交到你们手中…':'稍稍换个角度…'}</span>}
         {!cameraMoving&&crankHint&&<span className="production-camera-hint production-crank-hint" data-testid="winding-gesture-hint" role="status">{crankHint}</span>}
-      </div>
+      </div>;
+  return <div className={`production-object production-${view}${is3D?' has-webgl':' has-svg'}`} data-view={view} data-render-mode={is3D?ready?'3d':'loading':'2d'} data-lid-open={lidOpen} data-lid-moving={lidMoving} data-camera-moving={cameraMoving} data-camera-mode={mode} role="group" aria-label={stage==='preview'?previewState==='unrepaired'?'音乐盒待修预览':'音乐盒外观预览':'三维音乐盒工作台'}>
+    {is3D?<>
+      {expanded?<div className="production-expanded-placeholder">音乐盒正在放大欣赏</div>:viewport}
+      {mobile&&(stage==='complete'||stage==='performance'||!!work)&&<button ref={expandButton} className="production-expand" data-testid="production-expand" onClick={()=>setExpanded(true)}>放大欣赏</button>}
+      {expanded&&createPortal(<dialog ref={expandedDialog} className="production-expanded-dialog" aria-label="放大欣赏音乐盒" onCancel={()=>setExpanded(false)}><div className="production-expanded-header"><span>拖动旋转 · 双指缩放</span><button autoFocus data-testid="production-close-expanded" onClick={()=>setExpanded(false)}>返回工作台</button></div><div className="production-object production-box">{viewport}</div></dialog>,document.body)}
       {(stage==='gears'||stage==='melody')&&<div className="production-slot-bar">
         <span className="production-slot-caption">{role==='guide'?'指给伙伴':'选好零件，点槽位'}<small>↗</small></span>
         <div className="production-click-alternatives" role="group" aria-label="点击槽位的键盘替代">
