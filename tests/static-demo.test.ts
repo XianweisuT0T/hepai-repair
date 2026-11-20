@@ -66,8 +66,8 @@ async function reachArrangement(d: Driver) {
   assert.equal(d.snapshot.stage, 'arrange');
 }
 
-test('local demonstration completes actual manual A/B actions, music, launch and optional paper exchange', async () => {
-  const d = new Driver();
+test('local demonstration completes manual A/B actions and can exchange paper notes after resuming an older save', async () => {
+  let d = new Driver();
   try {
     await reachArrangement(d);
     const aTrack = structuredClone(d.snapshot.arrangement!.current.tracks.A);
@@ -98,6 +98,16 @@ test('local demonstration completes actual manual A/B actions, music, launch and
     assert.equal(d.snapshot.stage, 'complete'); assert.equal(d.snapshot.work!.demo, true);
     assert.equal(d.snapshot.work!.shareId, undefined);
     await d.act({ type: 'setWord', word: '晚风' }); await d.act({ type: 'setStamp', stamp: 'wave' });
+
+    const { storage, clock, token: legacyToken, snapshot: { code: legacyCode } } = d;
+    const legacySave = JSON.parse(storage.getItem(STATIC_DEMO_STORAGE_KEY)!);
+    delete legacySave.snapshot.paperNotes;
+    storage.setItem(STATIC_DEMO_STORAGE_KEY, JSON.stringify(legacySave));
+    d.close();
+    d = new Driver(storage, clock);
+    assert.equal((await d.request('resume', { code: legacyCode, token: legacyToken })).ok, true);
+    assert.equal(d.snapshot.paperNotes, undefined);
+
     await d.act({ type: 'sendNote', text: '这一拍很喜欢。' });
     assert.equal(d.snapshot.paperNotes!.length, 1);
     assert.equal(d.snapshot.paperNotes![0].to, 'A');
@@ -111,10 +121,10 @@ test('local demonstration completes actual manual A/B actions, music, launch and
     assert.equal(d.snapshot.work!.title, '微光 · 晚风');
     assert.equal(d.snapshot.work!.stamps!.B, 'wave');
     assert.equal('paperNotes' in d.snapshot.work!, false, 'local archive contains a work, not private messages');
-    const work = structuredClone(d.snapshot.work), code = d.snapshot.code, token = d.token;
+    const work = structuredClone(d.snapshot.work);
     d.close();
     const reopened = new Driver(d.storage, d.clock);
-    const restored = await reopened.request('resume', { code, token });
+    const restored = await reopened.request('resume', { code: legacyCode, token: legacyToken });
     assert.equal(restored.ok, true); assert.deepEqual(reopened.snapshot.work, work);
     assert.equal(reopened.snapshot.self, 'A'); assert.equal(reopened.snapshot.paperNotes![0].readAt, readAt);
     reopened.close();

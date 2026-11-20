@@ -185,10 +185,13 @@ export function createStaticDemoTransport(receive: (snapshot: Snapshot) => void,
       case 'finishPerformance': inStage('performance'); check(s.performanceAt !== undefined && now() >= s.performanceAt + (s.performanceDurationMs ?? 9000), '让旋律完整响完，再把它带走。'); s.stage = 'complete'; makeWork(); break;
       case 'setWord': inStage('complete'); check(typeof action.word === 'string' && Array.from(action.word).length <= 8 && /^[\p{L}\p{N}\s·-]*$/u.test(action.word), '作品短词请使用8字以内的文字或数字。'); me.word = action.word.trim(); if (s.work) s.work.title = title(); break;
       case 'setStamp': inStage('complete'); check(STAMPS.includes(action.stamp), '请选择提供的刻印。'); s.stamps![self] = action.stamp; if (s.work) s.work.stamps = clone(s.stamps); break;
-      case 'sendNote':
+      case 'sendNote': {
         inStage('complete'); check(typeof action.text === 'string' && action.text.trim().length && Array.from(action.text.trim()).length <= 80 && !/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(action.text), '纸签请填写1到80字。');
-        check((s.paperNotes ?? []).filter(note => note.from === self).length < 3, '当前角色已留下三张本地演示纸签。');
-        s.paperNotes!.push({ id: uniqueHex(16), from: self, to: self === 'A' ? 'B' : 'A', text: action.text.trim(), sentAt: now() }); break;
+        const notes = s.paperNotes ??= [];
+        check(notes.filter(note => note.from === self).length < 3, '当前角色已留下三张本地演示纸签。');
+        notes.push({ id: uniqueHex(16), from: self, to: self === 'A' ? 'B' : 'A', text: action.text.trim(), sentAt: now() });
+        break;
+      }
       case 'readNote': { inStage('complete'); const note = s.paperNotes?.find(item => item.id === action.noteId && item.to === self); check(note, '请切换到收件角色查看这张本地纸签。'); note.readAt ??= now(); break; }
       case 'shareConsent': case 'exhibitConsent': throw new Error('这是本地单人演示，不会生成双人分享链接或公开展品。可以保存作品图片。');
       case 'testConsent': case 'feedback': throw new Error('单人演示不收集或伪造真人研究数据。');
