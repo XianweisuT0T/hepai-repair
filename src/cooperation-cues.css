@@ -17,3 +17,14 @@
 .paper-panel.tool-panel .gear-fit-feedback{margin:10px 0;padding:10px 0;border-block:1px solid #9b815955;color:#3d513c;background:transparent;font-size:14px;line-height:1.65}
 @media(max-width:600px){.score-contributions{gap:4px}.score-contribution{min-width:145px;gap:6px}.score-contribution small{font-size:11px}.operation-cue{left:6px;right:6px;bottom:6px;font-size:12px;padding:6px 8px}}
 @media(prefers-reduced-motion:reduce){.operation-cue,.score-contribution,.score-contribution>svg{transition:none}.score-contribution.sounding>svg:first-child{transform:none}}
+/* Stable hint space keeps the mobile camera from resizing as guidance changes. */
+.operation-cue{pointer-events:auto;text-align:left}
+.operation-cue>span{flex:1;min-width:0}
+.operation-cue button{flex:none;min-height:44px;padding:6px 9px;border:0;background:transparent;color:#e4c48e;text-decoration:underline;text-underline-offset:4px;font:inherit;cursor:pointer}
+.operation-cue button:focus-visible{outline:2px solid #e4c48e;outline-offset:2px}
+.operation-cue-closed{left:auto;background:transparent;padding:0;pointer-events:none}
+.operation-cue-closed button{pointer-events:auto;background:#183235eb}
+.operation-guide-inline{flex:0 0 84px;min-height:84px}
+.operation-guide-inline .operation-cue{font-size:12px;gap:8px}
+.operation-guide-inline .operation-cue-closed{justify-content:flex-end}
+@media(max-width:600px){.operation-cue svg{width:20px;height:20px}.operation-cue button{padding-inline:5px;font-size:12px}}

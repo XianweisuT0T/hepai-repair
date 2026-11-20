@@ -35,6 +35,7 @@ export interface WorkshopMusicBoxProps extends MusicBoxProps {
   playbackBeats?:number;
   playbackLoops?:number;
   roomKey?:string;
+  allowExpand?:boolean;
   role?:Role;
   disabled?:boolean;
   work?:Work;
@@ -124,8 +125,8 @@ export default function WorkshopMusicBox(props:WorkshopMusicBoxProps){
     lidTimer.current=setTimeout(()=>setLidMoving(false),reduceMotion?50:900);
   }
   const operationGuide=<>
-        {lidOpen&&!cameraMoving&&!crankHint&&stage==='gears'&&<OperationCue key={`${roomKey}:gears:${role}`} kind="place" done={role==='guide'?!!props.marks?.some(m=>m.target.startsWith('slot-')&&!m.preview):Object.keys(installed).length>0} text={props.rejectedGear&&props.selectedGear===props.rejectedGear.gearId?'还没咬合，先和伙伴核对一下。':role==='guide'?'点槽位旁的形状，把位置指给伙伴。':props.selectedGear?'已拿好齿轮，点要试装的槽位。':'先选一枚齿轮，再点槽位；也可以直接拖进去。'}/>}
-        {lidOpen&&!cameraMoving&&!crankHint&&stage==='launch'&&<OperationCue key={`${roomKey}:launch:${role}`} kind={role==='maker'?'turn':'slide'} done={role==='maker'?!!props.windingAt||(props.winding??0)>0:!!props.guideReady} text={role==='maker'?'握住木柄，沿箭头转一点；也可以点按上弦。':'沿箭头拨动启动片；也可以点按拨片。'}/>}
+        {lidOpen&&!cameraMoving&&!crankHint&&stage==='gears'&&<OperationCue key={`${roomKey}:gears:${role}`} memoryKey={`gears:${role}`} kind="place" done={role==='guide'?!!props.marks?.some(m=>m.target.startsWith('slot-')&&!m.preview):Object.keys(installed).length>0} text={props.rejectedGear&&props.selectedGear===props.rejectedGear.gearId?'还没咬合，先和伙伴核对一下。':role==='guide'?(delivered?'收到伙伴递来的齿轮了。对照图纸，再把槽位指给伙伴。':'你看图纸。点槽位旁的形状，把位置指给伙伴。'):props.selectedGear?(props.marks?.some(m=>m.target.startsWith('slot-')&&!m.preview)?'伙伴已指了位置，点对应槽位试装；也可以直接拖进去。':'已拿好齿轮。拿不准就点「这块吗？」；也可以直接试装。'):'你来装配。先从零件盘选一枚齿轮。'}/>}
+        {lidOpen&&!cameraMoving&&!crankHint&&stage==='launch'&&<OperationCue key={`${roomKey}:launch:${role}`} memoryKey={`launch:${role}`} kind={role==='maker'?'turn':'slide'} done={role==='maker'?!!props.windingAt||(props.winding??0)>0:!!props.guideReady} text={role==='maker'?'握住木柄，沿箭头转一点；也可以点按上弦。':'沿箭头拨动启动片；也可以点按拨片。'}/>}
   </>;
   const viewport=<div className="production-viewport">
         <ModelBoundary key={retry} onFailure={failed}><Suspense fallback={<div className="production-loading" role="status">正在打开音乐盒…</div>}><CollaborativeMusicBox {...scene}/></Suspense></ModelBoundary>
@@ -150,7 +151,7 @@ export default function WorkshopMusicBox(props:WorkshopMusicBoxProps){
     {is3D?<>
       {expanded?<div className="production-expanded-placeholder">音乐盒正在放大欣赏</div>:viewport}
       {mobile&&!expanded&&(stage==='gears'||stage==='launch')&&<div className="operation-guide-inline">{operationGuide}</div>}
-      {mobile&&(stage==='complete'||stage==='performance'||!!work)&&<button ref={expandButton} className="production-expand" data-testid="production-expand" onClick={()=>setExpanded(true)}>放大欣赏</button>}
+      {mobile&&(stage==='complete'||stage==='performance'||!!work||props.allowExpand)&&<button ref={expandButton} className="production-expand" data-testid="production-expand" onClick={()=>setExpanded(true)}>放大欣赏</button>}
       {expanded&&createPortal(<dialog ref={expandedDialog} className="production-expanded-dialog" aria-label="放大欣赏音乐盒" onCancel={()=>setExpanded(false)}><div className="production-expanded-header"><span>拖动旋转 · 双指缩放</span><button autoFocus data-testid="production-close-expanded" onClick={()=>setExpanded(false)}>返回工作台</button></div><div className="production-object production-box">{viewport}</div></dialog>,document.body)}
       {(stage==='gears'||stage==='melody')&&<div className="production-slot-bar">
         <span className="production-slot-caption">{role==='guide'?'指给伙伴':'选好零件，点槽位'}<small>↗</small></span>

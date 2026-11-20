@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { MusicTrack, PublicWork } from '../shared/types';
 import MusicBox, { NoteIcon, StampIcon } from './MusicBox';
 import './museum.css';
 import { IS_STATIC_DEMO } from './runtimeMode';
+import { CURATED_EXHIBITS, type CuratedExhibit } from './curatedExhibits';
+import CuratedViewer, { type MuseumPlayback } from './CuratedViewer';
 
 interface MuseumProps {
   onBack: () => void;
@@ -10,6 +12,7 @@ interface MuseumProps {
   onSelect: (work: PublicWork) => void;
   onPersonalWorks?: () => void;
   createDisabled?: boolean;
+  playback: MuseumPlayback;
 }
 
 type LoadState = 'loading' | 'ready' | 'error';
@@ -88,10 +91,27 @@ function Exhibit({ work, onSelect }: { work: PublicWork; onSelect: MuseumProps['
   </li>;
 }
 
-export default function Museum({ onBack, onCreate, onSelect, onPersonalWorks, createDisabled = false }: MuseumProps) {
+export default function Museum({ onBack, onCreate, onSelect, onPersonalWorks, createDisabled = false, playback }: MuseumProps) {
   const [state, setState] = useState<LoadState>('loading');
   const [works, setWorks] = useState<PublicWork[]>([]);
   const [attempt, setAttempt] = useState(0);
+  const [curated, setCurated] = useState<CuratedExhibit | null>(null);
+  const browsePosition = useRef(0);
+  const stop = useRef(playback.onStop);
+  stop.current = playback.onStop;
+  useEffect(() => () => stop.current(), []);
+  function openCurated(exhibit: CuratedExhibit) {
+    playback.onStop(); browsePosition.current = window.scrollY; setCurated(exhibit);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+  function closeCurated() {
+    const id = curated?.id;
+    playback.onStop(); setCurated(null);
+    requestAnimationFrame(() => {
+      document.querySelector<HTMLButtonElement>(`[data-testid="curated-open-${id}"]`)?.focus({ preventScroll: true });
+      window.scrollTo({ top: browsePosition.current, behavior: 'instant' });
+    });
+  }
 
   useEffect(() => {
     if (IS_STATIC_DEMO) { setWorks([]); setState('ready'); return; }
@@ -108,6 +128,8 @@ export default function Museum({ onBack, onCreate, onSelect, onPersonalWorks, cr
     return () => request.abort();
   }, [attempt]);
 
+  if (curated) return <main className="museum-view" data-testid="museum"><CuratedViewer key={curated.id} exhibit={curated} playback={playback} onBack={closeCurated} /></main>;
+
   return <main className="museum-view" data-testid="museum">
     <nav className="museum-nav" aria-label="展柜导航">
       <button type="button" className="museum-back" data-testid="museum-back" onClick={onBack}><DirectionIcon back />回修理铺</button>
@@ -117,6 +139,21 @@ export default function Museum({ onBack, onCreate, onSelect, onPersonalWorks, cr
       <h1>合拍音乐盒博物馆</h1>
       <p>一个小小展柜，放下两个人一起修好的旋律。</p>
     </header>
+
+    <section className="museum-curated" aria-labelledby="curated-heading">
+      <div className="museum-collection-heading"><h2 id="curated-heading">同一只盒子，不同的合拍</h2><span>3 件策展示例</span></div>
+      <p className="museum-browse-note">先听听声音如何改变纸雕舞台。这些是设计示例，不代表真实参与者的作品。</p>
+      <ul className="museum-shelf">
+        {CURATED_EXHIBITS.map(exhibit => <li className="museum-exhibit" key={exhibit.id} data-testid={`curated-card-${exhibit.id}`}>
+          <div className="museum-object" aria-hidden="true"><MusicBox stage="preview" previewState="restored" view="box" finish={exhibit.finish} notes={exhibit.score.tracks.A.notes} stamps={exhibit.stamps} workTitle={exhibit.title} /><div className="museum-plinth" /></div>
+          <article className="museum-label"><h3>{exhibit.title}</h3><p className="curated-disclosure">策展示例 · 非真实用户共创作品</p><p className="curated-description">{exhibit.description}</p>
+            <div className="museum-score"><Track label="A" track={exhibit.score.tracks.A} /><Track label="B" track={exhibit.score.tracks.B} /></div>
+            <button className="museum-open" data-testid={`curated-open-${exhibit.id}`} onClick={() => openCurated(exhibit)}>欣赏与试听 <DirectionIcon /></button>
+          </article>
+        </li>)}
+      </ul>
+    </section>
+    <h2 className="museum-community-title">共同作品展柜</h2>
 
     {state === 'loading' && <section className="museum-message museum-loading" data-testid="museum-loading" role="status" aria-live="polite">
       <div className="museum-fetch-line" aria-hidden="true"><span /></div>
@@ -152,7 +189,7 @@ export default function Museum({ onBack, onCreate, onSelect, onPersonalWorks, cr
     </section>}
 
     {state === 'ready' && <footer className="museum-footer">
-      <p>{IS_STATIC_DEMO?'未来只陈列由双方共同同意公开的作品。当前没有虚构展品。':'每一件展品，都由两位伙伴共同同意公开展出。修理时的私密反馈不会放进展柜。'}</p>
+      <p>{IS_STATIC_DEMO?'共同作品展柜尚未开放。上方策展示例与真实作品分开，不会自动公开你的单人作品。':'共同作品展柜中的每件作品，都由两位伙伴共同同意公开。上方策展示例为设计展示，修理时的私密反馈不会展出。'}</p>
       <span>小小修理，慢慢靠近。</span>
     </footer>}
   </main>;

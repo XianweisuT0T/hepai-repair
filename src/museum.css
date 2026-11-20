@@ -27,3 +27,36 @@
 @media(prefers-reduced-motion:reduce){.museum-fetch-line span{animation:none;transform:translateX(50%)}.museum-view button{transition:none}}
 
 .museum-view .brand small{font-size:11px;letter-spacing:.08em}
+/* Curated scores are visually and semantically separate from consented works. */
+.museum-curated{padding-bottom:16px;border-bottom:1px solid #a6b3933d}
+.curated-disclosure{font-size:11px;color:#526649;line-height:1.6;margin:8px 0}
+.curated-description{font-size:13px;line-height:1.8;min-height:3.6em;margin:12px 0;color:#345043}
+.museum-community-title{font-family:'Songti SC','SimSun',serif;font-size:26px;font-weight:500;margin:35px 0 5px}
+.museum-curated~.museum-empty{min-height:260px;padding-block:10px 30px}
+.museum-curated~.museum-empty .museum-empty-stage{height:220px}
+.curated-title{margin:18px 0 22px}
+.curated-title h1{font-family:'Songti SC','SimSun',serif;font-size:clamp(30px,4vw,44px);font-weight:500;line-height:1.4}
+.curated-title p{font-size:13px;color:#c5ceb9;margin-top:12px}
+.curated-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(290px,1fr);gap:26px;align-items:center}
+.curated-model{min-width:0}
+.curated-model .production-object{width:100%;height:480px;min-height:0}
+.curated-orbit-note{font-size:12px;color:#c5ceb9;line-height:1.8;margin:12px 0 0}
+.curated-listening{background:#e9e5cf;color:#345043;padding:28px 24px;border-radius:3px}
+.curated-listening h2{font-family:'Songti SC','SimSun',serif;font-size:24px;font-weight:500;line-height:1.55;text-wrap:balance}
+.curated-listening>p{font-size:14px;line-height:1.8;margin-top:14px}
+.curated-listening .curated-material{font-size:12px;color:#526649;margin-bottom:22px}
+.curated-parts{display:flex;gap:6px;margin-bottom:18px}
+.curated-parts button{flex:1;min-height:44px;padding:6px 4px;font-size:13px;border:1px solid #83916e;background:transparent;color:#345043;border-radius:2px}
+.curated-parts button[aria-pressed=true]{background:#345043;color:#f0e8cf}
+.curated-listening button:focus-visible{outline-color:#345043}
+.curated-listening .score-contributions{display:grid;margin:16px 0;gap:8px}
+.curated-listening .score-contribution{color:#345043;background:#dce0c8}
+.curated-listening .score-contribution small{color:#48603f}
+.curated-listening .curated-explanation{font-size:13px}
+.curated-player{display:flex;align-items:center;gap:18px;margin-top:24px}
+.curated-player .museum-back{color:#345043}
+.curated-player button:disabled{opacity:.55;cursor:default}
+.curated-listening .curated-play-status{font-size:12px;color:#526649;min-height:2em}
+@media(max-width:760px){.curated-layout{grid-template-columns:1fr;gap:24px}.curated-model .production-object{height:350px}.curated-listening{padding:24px 20px}.curated-orbit-note{text-align:center}.museum-curated .museum-collection-heading{display:block}.museum-curated .museum-collection-heading>span{display:block;margin-top:6px}}
+@media(max-width:600px){.curated-model .production-object{height:300px}.curated-title{margin-top:12px}.museum-curated~.museum-empty .museum-empty-stage{display:none}.curated-description{min-height:0}.museum-view .curated-listening .score-contribution{min-width:0}}
+.app.museum-view{max-width:none;padding:0}
