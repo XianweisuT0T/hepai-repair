@@ -8,6 +8,7 @@ export interface CollaborativeSceneProps {
   previewState: 'unrepaired' | 'restored';
   cameraPreparing?: boolean;
   pageScroll?: boolean;
+  rejectedGear?:{gearId:string;slotId:string;at:number;message:string}|null;
   view: 'box' | 'mechanism' | 'winding';
   installedGearMap: Partial<Record<string, Gear>>;
   gears: Gear[];

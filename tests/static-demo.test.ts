@@ -47,6 +47,8 @@ async function reachArrangement(d: Driver) {
   assert.equal(d.snapshot.stage, 'gears');
   const failed = await d.request('command', d.command({ type: 'placeGear', gearId: 'gear-4', slotId: 'slot-1' }));
   assert.equal(failed.ok, false); assert.deepEqual(d.snapshot.installed, {});
+  assert.match(failed.error!, /大小合适.*再与伙伴核对刻痕/);
+  assert.doesNotMatch(failed.error!, /一道|gear-1/);
   await d.act({ type: 'mark', target: 'gear-1', text: '这块吗？', preview: 'gear-1' });
   const preview = d.snapshot.marks.at(-1)!; await d.as('A');
   assert.equal(d.snapshot.blueprint?.gears?.length, 3);

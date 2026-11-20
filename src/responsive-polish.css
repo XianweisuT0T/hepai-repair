@@ -115,6 +115,11 @@
   .app.in-room:has(>.workshop)>.demo-toolbar{min-height:54px}
 }
 
+@media(max-width:600px){
+  .app.in-room .stage-gears .workbench-object{height:260px}
+  .app.in-room .stage-launch .workbench-object{height:260px}
+}
+
 /* Workshop controls can exceed a phone's available height at every stage.
    Scroll the whole workspace, with model, tapes and tools in normal flow.
    The header and role switcher keep their own rows outside this scrollport. */

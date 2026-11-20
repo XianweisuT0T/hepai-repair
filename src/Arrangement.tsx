@@ -22,7 +22,7 @@ export function ArrangementBoard({arrangement,self,stamps,disabled,playing,playi
   return <div className="arrangement-board" data-testid="arrangement-board" data-audition-version={playing?playbackVersion:undefined} aria-label="两个人的旋律纸带">
     <div className="arrangement-board-header"><span>机芯已修好 · 调成我们喜欢的样子</span><i>{playing?(playbackVersion==='previous'?'正在听修改前':'正在听现在的组合'):'两条纸带，一段属于你们的旋律'}</i></div>
     <div className="music-tape-bed">{(['A','B'] as Identity[]).map(id=><div key={id} className={`music-tape tape-${id}${self===id?' is-own':''}`} data-track={id} data-playing-step={playing&&playingStep!==null?playingStep:undefined}>
-      <div className="tape-owner"><StampIcon stamp={stamps?.[id]||(id==='A'?'sprout':'spark')} size={26}/><b>{id}</b><span>{id==='A'?'主旋律':'伴奏'}</span><small>{self===id?'你的纸带':'伙伴的纸带'}</small></div>
+      <div className="tape-owner"><StampIcon stamp={stamps?.[id]||(id==='A'?'sprout':'spark')} size={26}/><b>{id}</b><span>{id==='A'?'主旋律':'伴奏'}</span><small>{self===id?'你的纸带':'伙伴的纸带'} · {id==='A'?'星光':'小灯'}</small></div>
       <div className="tape-notes">{version.tracks[id].notes.map((symbol,index)=>{
         const content=<><span className="tape-beat">0{index+1}</span>{symbol?<NoteIcon symbol={symbol} size={34}/>:<span className="tape-rest" aria-hidden="true">—</span>}<b>{symbol?noteNames[symbol]:'留白'}</b></>;
         const className=`track-cell${playing&&playingStep===index?' is-playing':''}${!symbol?' is-rest':''}`;

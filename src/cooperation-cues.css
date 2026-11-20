@@ -1,0 +1,19 @@
+.cooperation-cue{margin:12px 0 20px;padding:10px 0;border-block:1px solid #435c382f;color:#344c3e;font-size:14px;line-height:1.65;overflow-wrap:anywhere}
+.cooperation-cue small{display:block;margin-top:5px;font-size:12px;color:#4a6048}
+.score-contributions{display:flex;gap:12px;margin:10px 0;flex-wrap:wrap}
+.score-contribution{display:flex;align-items:center;gap:9px;flex:1;min-width:170px;padding:8px 0;color:#bdcbb8;transition:color .18s ease-out}
+.score-contribution>svg{width:24px;height:24px;flex:none;fill:none;stroke:currentColor;stroke-width:1.3;transition:transform .18s ease-out}
+.score-contribution b,.score-contribution small{display:block;font-weight:400}
+.score-contribution b{font-size:13px}.score-contribution small{font-size:12px;line-height:1.5;margin-top:3px}
+.score-contribution.sounding{color:#f5d58f}.score-contribution.sounding>svg:first-child{transform:translateY(-2px);fill:#d6b67535}
+.paper-panel .score-contribution{color:#43583d}.paper-panel .score-contribution.sounding{color:#79501c}
+.music-tape .track-cell.is-rest.is-playing{box-shadow:none;outline:1px dashed #e1d8b3;filter:none;background:transparent}
+.operation-cue{position:absolute;bottom:10px;left:12px;right:12px;display:flex;align-items:center;justify-content:center;gap:10px;margin:0;padding:8px 12px;background:#183235eb;color:#f0e4c8;font-size:13px;line-height:1.5;pointer-events:none;transition:opacity .35s ease-out;z-index:2}
+.operation-cue svg{width:25px;height:25px;flex:none;fill:none;stroke:#e4c48e;stroke-width:1.6}
+.operation-cue.learned{opacity:0}
+.operation-guide-inline{flex:0 0 52px;display:flex;align-items:center}
+.operation-guide-inline>.operation-cue{width:100%;box-sizing:border-box}
+.operation-guide-inline .operation-cue{position:static;margin:0;padding:8px 10px;min-height:38px}
+.paper-panel.tool-panel .gear-fit-feedback{margin:10px 0;padding:10px 0;border-block:1px solid #9b815955;color:#3d513c;background:transparent;font-size:14px;line-height:1.65}
+@media(max-width:600px){.score-contributions{gap:4px}.score-contribution{min-width:145px;gap:6px}.score-contribution small{font-size:11px}.operation-cue{left:6px;right:6px;bottom:6px;font-size:12px;padding:6px 8px}}
+@media(prefers-reduced-motion:reduce){.operation-cue,.score-contribution,.score-contribution>svg{transition:none}.score-contribution.sounding>svg:first-child{transform:none}}

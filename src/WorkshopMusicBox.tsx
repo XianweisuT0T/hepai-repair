@@ -1,5 +1,6 @@
 import { Component, Suspense, lazy, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import OperationCue from './OperationCue';
 import MusicBox, { type MusicBoxProps } from './MusicBox';
 import type { ArrangementVersion, Gear, Role, Work } from '../shared/types';
 import type { CollaborativeSceneProps } from './three/types';
@@ -27,6 +28,7 @@ function initialMode(){
   try{return localStorage.getItem(RENDER_KEY)!=='2d';}catch{return true;}
 }
 export interface WorkshopMusicBoxProps extends MusicBoxProps {
+  rejectedGear?:{gearId:string;slotId:string;at:number;message:string}|null;
   score?:ArrangementVersion;
   playbackStartedAt?:number;
   playbackBeatMs?:number;
@@ -104,7 +106,7 @@ export default function WorkshopMusicBox(props:WorkshopMusicBoxProps){
   const delivered=role==='guide'&&stage==='gears'?props.marks?.findLast(mark=>!!mark.preview)?.preview:undefined;
   const visiblePart=gears.find(item=>item.id===props.selectedGear)??gears.find(item=>item.id===delivered)??null;
   const scene:CollaborativeSceneProps={
-    stage,roomKey,role,view,previewState,cameraPreparing:props.cameraPreparing,pageScroll:mobile&&!expanded&&stage!=='launch',installedGearMap,gears,notes:[...displayNotes],finish:props.finish??'walnut',
+    stage,roomKey,role,view,rejectedGear:props.rejectedGear,previewState,cameraPreparing:props.cameraPreparing,pageScroll:mobile&&!expanded&&stage!=='launch',installedGearMap,gears,notes:[...displayNotes],finish:props.finish??'walnut',
     selectedGear:visiblePart,selectedNote:props.selectedNote??null,
     score:props.score,playbackStartedAt:props.playbackStartedAt,playbackBeatMs:props.playbackBeatMs,playbackBeats:props.playbackBeats,playbackLoops:props.playbackLoops,
     marks:props.marks??[],playing:!!props.playing,highlightNote:props.highlightNote??null,
@@ -121,6 +123,10 @@ export default function WorkshopMusicBox(props:WorkshopMusicBoxProps){
     setLidMoving(true);setLidOpen(current=>!current);clearTimeout(lidTimer.current);
     lidTimer.current=setTimeout(()=>setLidMoving(false),reduceMotion?50:900);
   }
+  const operationGuide=<>
+        {lidOpen&&!cameraMoving&&!crankHint&&stage==='gears'&&<OperationCue key={`${roomKey}:gears:${role}`} kind="place" done={role==='guide'?!!props.marks?.some(m=>m.target.startsWith('slot-')&&!m.preview):Object.keys(installed).length>0} text={props.rejectedGear&&props.selectedGear===props.rejectedGear.gearId?'还没咬合，先和伙伴核对一下。':role==='guide'?'点槽位旁的形状，把位置指给伙伴。':props.selectedGear?'已拿好齿轮，点要试装的槽位。':'先选一枚齿轮，再点槽位；也可以直接拖进去。'}/>}
+        {lidOpen&&!cameraMoving&&!crankHint&&stage==='launch'&&<OperationCue key={`${roomKey}:launch:${role}`} kind={role==='maker'?'turn':'slide'} done={role==='maker'?!!props.windingAt||(props.winding??0)>0:!!props.guideReady} text={role==='maker'?'握住木柄，沿箭头转一点；也可以点按上弦。':'沿箭头拨动启动片；也可以点按拨片。'}/>}
+  </>;
   const viewport=<div className="production-viewport">
         <ModelBoundary key={retry} onFailure={failed}><Suspense fallback={<div className="production-loading" role="status">正在打开音乐盒…</div>}><CollaborativeMusicBox {...scene}/></Suspense></ModelBoundary>
         <div className="production-camera-tools" aria-label="音乐盒视角与盒盖">
@@ -135,6 +141,7 @@ export default function WorkshopMusicBox(props:WorkshopMusicBoxProps){
             </div>
           </details>
         </div>
+        {!mobile&&operationGuide}
         {!lidOpen&&(stage==='gears'||stage==='melody')&&<span className="production-lid-hint" role="status">打开盒盖后继续装配</span>}
         {cameraMoving&&<span className="production-camera-hint" role="status">{stage==='gears'?'把机芯交到你们手中…':'稍稍换个角度…'}</span>}
         {!cameraMoving&&crankHint&&<span className="production-camera-hint production-crank-hint" data-testid="winding-gesture-hint" role="status">{crankHint}</span>}
@@ -142,6 +149,7 @@ export default function WorkshopMusicBox(props:WorkshopMusicBoxProps){
   return <div className={`production-object production-${view}${is3D?' has-webgl':' has-svg'}`} data-view={view} data-render-mode={is3D?ready?'3d':'loading':'2d'} data-lid-open={lidOpen} data-lid-moving={lidMoving} data-camera-moving={cameraMoving} data-camera-mode={mode} role="group" aria-label={stage==='preview'?previewState==='unrepaired'?'音乐盒待修预览':'音乐盒外观预览':'三维音乐盒工作台'}>
     {is3D?<>
       {expanded?<div className="production-expanded-placeholder">音乐盒正在放大欣赏</div>:viewport}
+      {mobile&&!expanded&&(stage==='gears'||stage==='launch')&&<div className="operation-guide-inline">{operationGuide}</div>}
       {mobile&&(stage==='complete'||stage==='performance'||!!work)&&<button ref={expandButton} className="production-expand" data-testid="production-expand" onClick={()=>setExpanded(true)}>放大欣赏</button>}
       {expanded&&createPortal(<dialog ref={expandedDialog} className="production-expanded-dialog" aria-label="放大欣赏音乐盒" onCancel={()=>setExpanded(false)}><div className="production-expanded-header"><span>拖动旋转 · 双指缩放</span><button autoFocus data-testid="production-close-expanded" onClick={()=>setExpanded(false)}>返回工作台</button></div><div className="production-object production-box">{viewport}</div></dialog>,document.body)}
       {(stage==='gears'||stage==='melody')&&<div className="production-slot-bar">

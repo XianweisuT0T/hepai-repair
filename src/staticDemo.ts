@@ -144,7 +144,7 @@ export function createStaticDemoTransport(receive: (snapshot: Snapshot) => void,
         inStage('gears'); asRole('maker');
         check(!s.installed[action.slotId], '这个位置已经装好。');
         check(!Object.values(s.installed).includes(action.gearId), '这枚齿轮已经装进机芯。');
-        check(ANSWERS[action.slotId] === action.gearId, '零件与插槽不匹配，请核对尺寸与刻痕。');
+        if(ANSWERS[action.slotId]!==action.gearId){const offered=GEARS.find(g=>g.id===action.gearId),expected=GEARS.find(g=>g.id===ANSWERS[action.slotId]);throw new Error(offered&&expected&&offered.size===expected.size?'大小合适，还没咬合。再与伙伴核对刻痕。':'还没咬合。再与伙伴核对大小和刻痕。');}
         s.installed[action.slotId] = action.gearId;
         if (Object.keys(s.installed).length === 3) { s.stage = 'swap'; delete s.placementReply; } break;
       case 'mark':

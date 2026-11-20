@@ -102,7 +102,10 @@ test('真实双人：私有图纸、合作修复、权限/幂等、共同启动�
     assert.equal((await stranger.emit('join', { code: a.snapshot.code })).ok, false, '第三人不得进入');
     assert.equal((await stranger.emit('join', { code: 'XXXXXX' })).ok, false, '错误房间码提示');
     assert.equal((await a.command({ type: 'placeGear', gearId: 'gear-1', slotId: 'slot-1' })).ok, false, '图纸师无装配权限');
-    assert.equal((await b.command({ type: 'placeGear', gearId: 'gear-4', slotId: 'slot-1' })).ok, false, '错误零件被拒绝');
+    const badFit=await b.command({ type: 'placeGear', gearId: 'gear-4', slotId: 'slot-1' });
+    assert.equal(badFit.ok, false, '错误零件被拒绝');
+    assert.match(badFit.error!, /大小合适.*再与伙伴核对刻痕/);
+    assert.doesNotMatch(badFit.error!, /一道|gear-1/, '反馈不提供正确答案');
     assert.deepEqual(b.snapshot.installed, {});
     const oldVersion = b.snapshot.version;
     const order = b.snapshot.gears.map(gear => gear.id);

@@ -13,7 +13,8 @@ import { CAMERA, CRANK_CENTER } from '../lab3d/config';
 import type { Lab3DState } from '../lab3d/types';
 import { scoreFromNotes, type ScoreWorldRenderedState } from '../../shared/scoreWorld';
 import ProductionControls from './ProductionControls';
-import ProductionGear from './ProductionGear';
+import ProductionGear, { RejectedGear } from './ProductionGear';
+import GestureGuide from './GestureGuide';
 import ProductionNotes from './ProductionNotes';
 import ProductionCrank from './ProductionCrank';
 import ProductionArm from './ProductionArm';
@@ -144,10 +145,15 @@ function Scene({props,host}:{props:CollaborativeSceneProps;host:RefObject<HTMLDi
       </group>;
     })}
     <ProductionNotes props={props} materials={materials} canInteract={canInteract} openness={openness}/>
+    {props.stage==='gears'&&props.lidOpen&&props.rejectedGear&&props.selectedGear?.id===props.rejectedGear.gearId&&Date.now()-props.rejectedGear.at<1600&&(()=>{
+      const slot=PRODUCTION_SOCKETS.find(s=>s.id===props.rejectedGear!.slotId);
+      return slot&&!props.installedGearMap[slot.id]?<RejectedGear key={props.rejectedGear!.at} gear={props.selectedGear!} position={[slot.x,1.70,slot.z]} materials={materials} reduceMotion={props.reduceMotion}/>:null;
+    })()}
     <PaperStage state={visualState} materials={materials} openness={openness} openHeight={1.64} stageZ={-.94} showStem score={score} playback={playback} scoreTelemetry={scoreTelemetry}/>
     <Mechanism state={visualState} materials={materials} z={-.43} stageClearance/>
     <ProductionCrank props={props} materials={materials} controlsRef={controls} dragging={dragging} groupRef={node=>{crank.current=node;}} host={host} canInteract={canInteract}/>
     <ProductionArm props={props} materials={materials} canInteract={canInteract} groupRef={node=>{arm.current=node;}}/>
+    {props.stage==='launch'&&<GestureGuide props={props}/>}
     <group name="production-overlays" visible={showMarks&&props.lidOpen}><ProductionMarks mark={props.marks.at(-1)} materials={materials}/></group>
   </>;
 }

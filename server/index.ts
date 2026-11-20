@@ -529,7 +529,8 @@ export function createRepairServer(options: RepairServerOptions) {
         if (Object.values(room.installed).includes(action.gearId)) throw new Error('这枚齿轮已经安装在机芯里了。');
         if (GEAR_ANSWERS[action.slotId] !== action.gearId) {
           activity(room, person.id, 'failed_placement', action.slotId);
-          throw new Error('当前零件与这个插槽不匹配，再与伙伴核对尺寸和刻痕。');
+          const offered=GEARS.find(g=>g.id===action.gearId),expected=GEARS.find(g=>g.id===GEAR_ANSWERS[action.slotId]);
+          throw new Error(offered&&expected&&offered.size===expected.size?'大小合适，还没咬合。再与伙伴核对刻痕。':'还没咬合。再与伙伴核对大小和刻痕。');
         }
         room.installed[action.slotId] = action.gearId;
         milestone(room, 'first_install');

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Group, MathUtils, Vector3 } from 'three';
 import type { Gear } from '../../shared/types';
@@ -9,6 +9,20 @@ import { SIZE_RADII } from './productionConfig';
 
 const SEAT_HEIGHT=.12;
 const SEAT_MS=160;
+
+/** A failed fit pauses above the attempted shaft; it never becomes an installed gear. */
+export function RejectedGear({gear,position,materials,reduceMotion}:{gear:Gear;position:readonly[number,number,number];materials:LabMaterials;reduceMotion:boolean}){
+  const [visible,setVisible]=useState(true);
+  const hover=useRef<Group>(null),born=useRef(performance.now());
+  useEffect(()=>{const timer=setTimeout(()=>setVisible(false),1400);return()=>clearTimeout(timer);},[]);
+  useFrame(state=>{
+    if(!visible||!hover.current||reduceMotion)return;
+    const t=Math.min(1,(performance.now()-born.current)/1400);
+    hover.current.position.y=.06*Math.sin(t*Math.PI);
+    state.invalidate();
+  });
+  return visible?<group ref={hover} name="gear-fit-attempt"><ProductionGear gear={gear} position={position} materials={materials} playing={false} reduceMotion={reduceMotion}/></group>:null;
+}
 
 export default function ProductionGear({gear,position,materials,playing,reduceMotion,arriving=false,index=0}:{gear:Gear;position:readonly[number,number,number];materials:LabMaterials;playing:boolean;reduceMotion:boolean;arriving?:boolean;index?:number}){
   const radius=SIZE_RADII[gear.size];
