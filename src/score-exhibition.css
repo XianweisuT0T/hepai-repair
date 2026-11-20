@@ -56,6 +56,6 @@
 /* This selector must outrank the generic workbench viewport loaded by main.tsx.
    Its measured Canvas height must be the visible grid row, not a tall canvas
    clipped by the score preview. The caption occupies its own row below it. */
-.score-world-preview>.production-object>.production-viewport{height:100%;aspect-ratio:auto;min-height:0}
+.score-world-preview>.production-object .production-viewport{height:100%;aspect-ratio:auto;min-height:0}
 
 .archive-record{padding-bottom:10px;border-bottom:1px solid #a7ad8b60}.archive-record .archive-item{border-bottom:0}.archive-withdraw{border:0;background:none;min-height:44px;padding:0 8px;color:#526246;text-decoration:underline;text-underline-offset:4px;font-size:12px}

@@ -28,8 +28,10 @@ async page => {
         await p.getByTestId(`curated-open-${id}`).click();
         await p.waitForFunction(() => document.querySelector('[data-testid="production-canvas"]')?.dataset.webgl === 'ready');
         check(await p.locator('canvas').count() === 1, 'Viewer must use only one renderer');
+        const notePlates = await p.getByTestId('production-canvas').getAttribute('data-notes');
         for (const part of ['只听 A', '只听 B', '完整合奏']) {
           await p.getByRole('button', { name: part, exact: true }).click();
+          check(await p.getByTestId('production-canvas').getAttribute('data-notes') === notePlates, 'Solo listening must preserve the original note plates');
           await p.evaluate(() => { window.__tones = []; });
           await p.getByTestId('curated-play').click();
           await p.waitForFunction(() => window.__tones.length > 0);
@@ -43,9 +45,21 @@ async page => {
         check(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'Viewer horizontal overflow');
         if (id === 'moon-forest') {
           if (width < 600) {
-            await p.getByTestId('production-expand').click();
+            const canvas = await p.locator('canvas').elementHandle();
+            const button = p.getByTestId('production-expand');
+            await button.scrollIntoViewIfNeeded();
+            const rect = await button.boundingBox(), touch = await context.newCDPSession(p);
+            const point = { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
+            await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [point] });
+            await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: point.x + 24, y: point.y }] });
+            await touch.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] });
+            check(await p.getByRole('dialog').count() === 0, 'Cancelled swipe must not expand the model');
+            await button.tap();
             check(await p.getByRole('dialog').isVisible(), 'Expanded viewer missing');
-            await p.getByTestId('production-close-expanded').click();
+            check(await p.locator('canvas').evaluate((node, original) => node === original, canvas), 'Expansion must preserve the renderer');
+            await p.getByTestId('production-close-expanded').tap();
+            check(await p.locator('canvas').evaluate((node, original) => node === original, canvas), 'Returning must preserve the renderer');
+            await touch.detach();
           }
           await p.screenshot({ path: `output/playwright/upgrade-viewer-${width}.png`, fullPage: true });
         }
@@ -61,8 +75,20 @@ async page => {
         await p.getByTestId('guide-skip').click(); await p.reload();
         await p.waitForFunction(() => document.querySelector('[data-testid="production-canvas"]')?.dataset.cameraMoving === 'false');
         await p.getByTestId('guide-reopen').click();
+        await p.getByTestId('production-toggle-lid').click();
+        await p.waitForFunction(() => document.querySelector('.production-object')?.getAttribute('data-lid-moving') === 'false');
+        await p.getByTestId('production-toggle-lid').click();
+        await p.waitForFunction(() => document.querySelector('.production-object')?.getAttribute('data-lid-moving') === 'false');
+        check(await p.getByTestId('operation-cue').isVisible(), 'Lid movement must preserve reopened guidance');
         await p.getByRole('button', { name: '小号 · 一道刻痕，小齿轮，1道刻痕', exact: true }).click();
         check((await p.getByTestId('operation-cue').innerText()).includes('这块吗'), 'Selected-part guidance missing');
+        await p.locator('.ask-button').hover();
+        const contrast = await p.locator('.ask-button').evaluate(e => {
+          const luminance = color => { const values = color.match(/[\d.]+/g).slice(0, 3).map(Number).map(v => v / 255).map(v => v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4); return values[0] * .2126 + values[1] * .7152 + values[2] * .0722; };
+          const style = getComputedStyle(e), bg = luminance(style.backgroundColor);
+          return [style.color, getComputedStyle(e.querySelector('strong')).color].map(color => { const fg = luminance(color); return (Math.max(fg, bg) + .05) / (Math.min(fg, bg) + .05); });
+        });
+        check(contrast.every(ratio => ratio >= 4.5), 'Selected ask button must retain legible contrast on hover');
         await p.screenshot({ path: 'output/playwright/upgrade-guide-390.png', fullPage: true });
         await p.getByTestId('slot-slot-1').click(); await p.getByTestId('guide-reopen').waitFor();
         check(await p.evaluate(() => localStorage.getItem('hepai-guide-v1:gears:maker')) === 'seen', 'Completion memory missing');

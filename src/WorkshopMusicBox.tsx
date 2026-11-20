@@ -1,4 +1,4 @@
-import { Component, Suspense, lazy, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Component, Suspense, lazy, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import OperationCue from './OperationCue';
 import MusicBox, { type MusicBoxProps } from './MusicBox';
@@ -54,14 +54,19 @@ export default function WorkshopMusicBox(props:WorkshopMusicBoxProps){
   const [reduceMotion,setReduceMotion]=useState(()=>matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [mobile,setMobile]=useState(()=>matchMedia('(pointer: coarse), (max-width: 600px)').matches);
   const [expanded,setExpanded]=useState(false);
+  const expandTouch=useRef<{id:number;x:number;y:number}|null>(null);
   const expandedDialog=useRef<HTMLDialogElement>(null);
+  const inlineScene=useRef<HTMLDivElement>(null),expandedScene=useRef<HTMLDivElement>(null);
+  // React owns the portal contents; only its mount node moves. Keep one WebGL
+  // renderer and the same playing scene when entering or leaving the modal.
+  const [sceneMount]=useState(()=>{const node=document.createElement('div');node.style.display='contents';return node;});
   const expandButton=useRef<HTMLButtonElement>(null);
   useEffect(()=>{
     const query=matchMedia('(pointer: coarse), (max-width: 600px)');
     const changed=()=>{setMobile(query.matches);if(!query.matches)setExpanded(false);};
     query.addEventListener('change',changed);return()=>query.removeEventListener('change',changed);
   },[]);
-  useEffect(()=>{setExpanded(false);},[stage,roomKey]);
+  useEffect(()=>{expandTouch.current=null;setExpanded(false);},[stage,roomKey]);
   useEffect(()=>{
     if(!expanded)return;
     const dialog=expandedDialog.current;
@@ -93,6 +98,11 @@ export default function WorkshopMusicBox(props:WorkshopMusicBoxProps){
     const url=new URL(location.href);url.searchParams.set('render',value?'3d':'2d');history.replaceState(null,'',url);
   }
   const is3D=use3D&&!error;
+  useLayoutEffect(()=>{
+    if(!is3D)return;
+    (expanded?expandedScene.current:inlineScene.current)?.appendChild(sceneMount);
+    return()=>sceneMount.remove();
+  },[expanded,is3D,sceneMount]);
   const canInteract=is3D&&lidOpen&&!lidMoving&&!cameraMoving&&mode==='assemble'&&!disabled;
   const canGears=canInteract&&stage==='gears'&&!!props.canOperate;
   const canNotes=canInteract&&stage==='melody'&&!!props.canOperate;
@@ -103,7 +113,7 @@ export default function WorkshopMusicBox(props:WorkshopMusicBoxProps){
   if(stage==='preview'){
     displayGears.forEach((gear,index)=>{if(previewState==='restored'||index!==1)installedGearMap[slotIds[index]]=gear;});
   }else slotIds.forEach(id=>{const gear=gears.find(item=>item.id===installed[id]);if(gear)installedGearMap[id]=gear;});
-  const displayNotes=stage==='preview'?(notes.some(Boolean)?notes:previewState==='unrepaired'?['star',null,'leaf',null] as const:['star','moon','leaf','moon'] as const):notes;
+  const displayNotes=stage==='preview'?(notes.length?notes:previewState==='unrepaired'?['star',null,'leaf',null] as const:['star','moon','leaf','moon'] as const):notes;
   const delivered=role==='guide'&&stage==='gears'?props.marks?.findLast(mark=>!!mark.preview)?.preview:undefined;
   const visiblePart=gears.find(item=>item.id===props.selectedGear)??gears.find(item=>item.id===delivered)??null;
   const scene:CollaborativeSceneProps={
@@ -125,8 +135,8 @@ export default function WorkshopMusicBox(props:WorkshopMusicBoxProps){
     lidTimer.current=setTimeout(()=>setLidMoving(false),reduceMotion?50:900);
   }
   const operationGuide=<>
-        {lidOpen&&!cameraMoving&&!crankHint&&stage==='gears'&&<OperationCue key={`${roomKey}:gears:${role}`} memoryKey={`gears:${role}`} kind="place" done={role==='guide'?!!props.marks?.some(m=>m.target.startsWith('slot-')&&!m.preview):Object.keys(installed).length>0} text={props.rejectedGear&&props.selectedGear===props.rejectedGear.gearId?'还没咬合，先和伙伴核对一下。':role==='guide'?(delivered?'收到伙伴递来的齿轮了。对照图纸，再把槽位指给伙伴。':'你看图纸。点槽位旁的形状，把位置指给伙伴。'):props.selectedGear?(props.marks?.some(m=>m.target.startsWith('slot-')&&!m.preview)?'伙伴已指了位置，点对应槽位试装；也可以直接拖进去。':'已拿好齿轮。拿不准就点「这块吗？」；也可以直接试装。'):'你来装配。先从零件盘选一枚齿轮。'}/>}
-        {lidOpen&&!cameraMoving&&!crankHint&&stage==='launch'&&<OperationCue key={`${roomKey}:launch:${role}`} memoryKey={`launch:${role}`} kind={role==='maker'?'turn':'slide'} done={role==='maker'?!!props.windingAt||(props.winding??0)>0:!!props.guideReady} text={role==='maker'?'握住木柄，沿箭头转一点；也可以点按上弦。':'沿箭头拨动启动片；也可以点按拨片。'}/>}
+        {stage==='gears'&&<OperationCue visible={lidOpen&&!cameraMoving&&!crankHint} key={`${roomKey}:gears:${role}`} memoryKey={`gears:${role}`} kind="place" done={role==='guide'?!!props.marks?.some(m=>m.target.startsWith('slot-')&&!m.preview):Object.keys(installed).length>0} text={props.rejectedGear&&props.selectedGear===props.rejectedGear.gearId?'还没咬合，先和伙伴核对一下。':role==='guide'?(delivered?'收到伙伴递来的齿轮了。对照图纸，再把槽位指给伙伴。':'你看图纸。点槽位旁的形状，把位置指给伙伴。'):props.selectedGear?(props.marks?.some(m=>m.target.startsWith('slot-')&&!m.preview)?'伙伴已指了位置，点对应槽位试装；也可以直接拖进去。':'已拿好齿轮。拿不准就点「这块吗？」；也可以直接试装。'):'你来装配。先从零件盘选一枚齿轮。'}/>}
+        {stage==='launch'&&<OperationCue visible={lidOpen&&!cameraMoving&&!crankHint} key={`${roomKey}:launch:${role}`} memoryKey={`launch:${role}`} kind={role==='maker'?'turn':'slide'} done={role==='maker'?!!props.windingAt||(props.winding??0)>0:!!props.guideReady} text={role==='maker'?'握住木柄，沿箭头转一点；也可以点按上弦。':'沿箭头拨动启动片；也可以点按拨片。'}/>}
   </>;
   const viewport=<div className="production-viewport">
         <ModelBoundary key={retry} onFailure={failed}><Suspense fallback={<div className="production-loading" role="status">正在打开音乐盒…</div>}><CollaborativeMusicBox {...scene}/></Suspense></ModelBoundary>
@@ -149,10 +159,23 @@ export default function WorkshopMusicBox(props:WorkshopMusicBoxProps){
       </div>;
   return <div className={`production-object production-${view}${is3D?' has-webgl':' has-svg'}`} data-view={view} data-render-mode={is3D?ready?'3d':'loading':'2d'} data-lid-open={lidOpen} data-lid-moving={lidMoving} data-camera-moving={cameraMoving} data-camera-mode={mode} role="group" aria-label={stage==='preview'?previewState==='unrepaired'?'音乐盒待修预览':'音乐盒外观预览':'三维音乐盒工作台'}>
     {is3D?<>
-      {expanded?<div className="production-expanded-placeholder">音乐盒正在放大欣赏</div>:viewport}
+      <div ref={inlineScene} style={{display:'contents'}}/>
+      {createPortal(viewport,sceneMount)}
+      {expanded&&<div className="production-expanded-placeholder">音乐盒正在放大欣赏</div>}
       {mobile&&!expanded&&(stage==='gears'||stage==='launch')&&<div className="operation-guide-inline">{operationGuide}</div>}
-      {mobile&&(stage==='complete'||stage==='performance'||!!work||props.allowExpand)&&<button ref={expandButton} className="production-expand" data-testid="production-expand" onClick={()=>setExpanded(true)}>放大欣赏</button>}
-      {expanded&&createPortal(<dialog ref={expandedDialog} className="production-expanded-dialog" aria-label="放大欣赏音乐盒" onCancel={()=>setExpanded(false)}><div className="production-expanded-header"><span>拖动旋转 · 双指缩放</span><button autoFocus data-testid="production-close-expanded" onClick={()=>setExpanded(false)}>返回工作台</button></div><div className="production-object production-box">{viewport}</div></dialog>,document.body)}
+      {mobile&&(stage==='complete'||stage==='performance'||!!work||props.allowExpand)&&<button ref={expandButton} className="production-expand" data-testid="production-expand"
+        onPointerDown={event=>{expandTouch.current=event.pointerType==='touch'&&event.isPrimary?{id:event.pointerId,x:event.clientX,y:event.clientY}:null;}}
+        onPointerMove={event=>{const start=expandTouch.current;if(start&&Math.hypot(event.clientX-start.x,event.clientY-start.y)>8)expandTouch.current=null;}}
+        onPointerCancel={()=>{expandTouch.current=null;}}
+        onPointerLeave={()=>{expandTouch.current=null;}}
+        onPointerUp={event=>{
+          const start=expandTouch.current;expandTouch.current=null;
+          // Touch browsers may suppress the compatibility click after a canvas
+          // gesture. Accept a stationary primary tap, never a scroll or drag.
+          if(start&&start.id===event.pointerId&&Math.hypot(event.clientX-start.x,event.clientY-start.y)<=8)setExpanded(true);
+        }}
+        onClick={()=>setExpanded(true)}>放大欣赏</button>}
+      {expanded&&createPortal(<dialog ref={expandedDialog} className="production-expanded-dialog" aria-label="放大欣赏音乐盒" onCancel={()=>setExpanded(false)}><div className="production-expanded-header"><span>拖动旋转 · 双指缩放</span><button autoFocus data-testid="production-close-expanded" onClick={()=>setExpanded(false)}>返回工作台</button></div><div ref={expandedScene} className="production-object production-box"/></dialog>,document.body)}
       {(stage==='gears'||stage==='melody')&&<div className="production-slot-bar">
         <span className="production-slot-caption">{role==='guide'?'指给伙伴':'选好零件，点槽位'}<small>↗</small></span>
         <div className="production-click-alternatives" role="group" aria-label="点击槽位的键盘替代">

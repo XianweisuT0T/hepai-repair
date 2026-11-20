@@ -24,7 +24,7 @@ export default function CuratedViewer({ exhibit, playback, onBack }: { exhibit: 
     <div className="curated-layout">
       <div className="curated-model">
         <WorkshopMusicBox stage="preview" previewState="restored" view="box" roomKey={`curated:${exhibit.id}`} allowExpand
-          finish={exhibit.finish} stamps={exhibit.stamps} workTitle={exhibit.title} notes={score.tracks.A.notes}
+          finish={exhibit.finish} stamps={exhibit.stamps} workTitle={exhibit.title} notes={exhibit.score.tracks.A.notes}
           score={score} playing={playback.playing} highlightNote={playback.highlight} playbackStartedAt={playback.clock?.startedAt}
           playbackBeatMs={playback.clock?.beatMs} playbackBeats={playback.clock?.beats} playbackLoops={playback.clock?.loops} onRequestStop={playback.onStop} />
         <p className="curated-orbit-note">拖动欣赏不同角度；手机上点「放大欣赏」后旋转。</p>

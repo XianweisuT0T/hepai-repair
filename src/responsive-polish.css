@@ -62,7 +62,7 @@
   .stage-gears .tool-panel:has(.parts-tray .selected)>.paper-topline{order:0}
   .stage-gears .tool-panel:has(.parts-tray .selected)>.tool-title{order:1}
   .stage-gears .tool-panel:has(.parts-tray .selected)>p{order:2}
-  .stage-gears .tool-panel:has(.parts-tray .selected)>.ask-button{order:3;margin:8px 0 0;min-height:48px;background:#d4dcbc;border-color:#92a377}
+  .stage-gears .tool-panel:has(.parts-tray .selected)>.ask-button{order:3;margin:8px 0 0;min-height:48px;background:#345043;color:#f0e8cf;border-color:#52725b}
   .stage-gears .tool-panel:has(.parts-tray .selected)>.parts-tray{order:4}
   .stage-gears .tool-panel:has(.parts-tray .selected)>.gear-preview{order:5}
   .stage-gears .tool-panel:has(.parts-tray .selected)>.helper-actions{order:6}
@@ -178,3 +178,6 @@
   .site-header .icon-button{width:32px;min-width:32px}
 }
 @media(max-width:600px){.app.in-room .stage-gears .workbench-object,.app.in-room .stage-launch .workbench-object{height:340px}}
+
+.stage-gears .tool-panel:has(.parts-tray .selected)>.ask-button:not(:disabled):hover{background:#293f34;color:#f0e8cf}
+.stage-gears .tool-panel:has(.parts-tray .selected)>.ask-button>strong{color:#f2ddb1}

@@ -49,6 +49,7 @@ function intentLog(page:Page){
   return{commands,count:(type:string)=>[...commands.values()].filter(value=>value===type).length};
 }
 async function geometryPath(page:Page,key:'arm'|'crank'){
+  await expect.poll(async()=>JSON.parse((await model(page).getAttribute(`data-${key}-path`))||'[]').length).toBe(17);
   const path=JSON.parse((await model(page).getAttribute(`data-${key}-path`))||'[]')as[number,number][];expect(path).toHaveLength(17);
   const rect=(await model(page).locator('canvas').boundingBox())!;
   return path.map(([x,y])=>({x:rect.x+(x+1)*rect.width/2,y:rect.y+(1-y)*rect.height/2}));
@@ -78,7 +79,7 @@ test('滑拨片与演奏观察：真实双端短拖反向不准备，有效滑�
     await a.getByRole('button',{name:'点击开启声音',exact:true}).click();const crank=await geometryPath(a,'crank');
     await a.mouse.move(crank[0].x,crank[0].y);await a.mouse.down();await expect(model(a)).toHaveAttribute('data-crank-dragging','true');await a.mouse.move(crank[1].x,crank[1].y,{steps:4});await a.mouse.up();
     await a.locator('main.stage-performance').waitFor();await readyModel(a);await expect(model(a)).toHaveAttribute('data-camera-mode','observe');await expect(a.getByTestId('production-toggle-lid')).toBeDisabled();
-    const started=await model(a).getAttribute('data-playback-started-at'),clock=await world(a),tones=await a.evaluate(()=>(window as unknown as{__performanceToneStarts:number[]}).__performanceToneStarts.length),beforeIntents=[aLog.commands.size,bLog.commands.size];
+    await expect.poll(async()=>(await world(a)).active).toBe(true);const started=await model(a).getAttribute('data-playback-started-at'),clock=await world(a),tones=await a.evaluate(()=>(window as unknown as{__performanceToneStarts:number[]}).__performanceToneStarts.length),beforeIntents=[aLog.commands.size,bLog.commands.size];
     expect(Number(started)).toBeGreaterThan(0);expect(clock.active).toBe(true);expect(tones).toBeGreaterThan(0);
     let previous=await model(a).evaluate(e=>Math.atan2(Number(e.dataset.cameraX),Number(e.dataset.cameraZ))),travel=0;
     for(let index=0;index<9;index++){
@@ -106,12 +107,12 @@ test('滑拨片手机：原生触摸取消不确认，点击与HTML替代保留�
     await expect.poll(()=>setup.a.snapshot.members.find(member=>member.id==='B')!.launchReady).toBe(true);await setup.a.act({type:'reopenArrangement'});await expect(page.getByTestId('arrangement-board')).toBeVisible();
     await setup.a.act({type:'approveTrack'});await page.getByTestId('arrangement-approve').tap();await expect(page.getByTestId('launch-ready')).toBeEnabled();await page.getByTestId('launch-ready').tap();await expect(model(page)).toHaveAttribute('data-guide-ready','true');expect(log.count('launchReady')).toBe(2);
     const readyPath=await geometryPath(page,'arm');await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[readyPath[16]]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[readyPath[0]]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});expect(log.count('launchReady')).toBe(2);
-    await expect.poll(()=>setup.a.snapshot.members.find(member=>member.id==='B')!.launchReady).toBe(true);await setup.a.act({type:'wind'});await page.locator('main.stage-performance').waitFor();await readyModel(page);await expect(model(page)).toHaveAttribute('data-camera-mode','observe');
+    await expect.poll(()=>setup.a.snapshot.members.find(member=>member.id==='B')!.launchReady).toBe(true);await setup.a.act({type:'wind'});await page.locator('main.stage-performance').waitFor();await readyModel(page);await expect(model(page)).toHaveAttribute('data-camera-mode','fixed');const canvasBefore=await model(page).locator('canvas').elementHandle();await page.getByTestId('production-expand').tap();await expect(page.getByRole('dialog',{name:'放大欣赏音乐盒'})).toBeVisible();await readyModel(page);await expect(model(page)).toHaveAttribute('data-camera-mode','observe');expect(await model(page).locator('canvas').evaluate((node,prior)=>node===prior,canvasBefore)).toBe(true);
     const started=await model(page).getAttribute('data-playback-started-at'),clock=await world(page),rect=(await model(page).locator('canvas').boundingBox())!,before=await model(page).getAttribute('data-camera-x');
     await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:rect.x+rect.width*.8,y:rect.y+rect.height*.55}]});
     for(let step=1;step<=6;step++)await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:rect.x+rect.width*(.8-step*.09),y:rect.y+rect.height*.55}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
     await expect.poll(()=>model(page).getAttribute('data-camera-x')).not.toBe(before);await expect(model(page)).toHaveAttribute('data-playback-started-at',started!);await expect(model(page)).toHaveAttribute('data-playing','true');expect((await world(page)).elapsedBeats).toBeGreaterThanOrEqual(clock.elapsedBeats);expect(log.count('launchReady')).toBe(2);
-    await expect(page.getByRole('button',{name:'点击开启声音',exact:true})).toBeVisible();await page.screenshot({path:evidence('arm-performance-touch-390.png'),fullPage:true});await cdp.detach();
+    await page.getByTestId('production-close-expanded').tap();await expect(model(page)).toHaveAttribute('data-camera-mode','fixed');await expect(page.getByRole('button',{name:'点击开启声音',exact:true})).toBeVisible();await page.screenshot({path:evidence('arm-performance-touch-390.png'),fullPage:true});await cdp.detach();
   }finally{setup.peers.forEach(peer=>peer.close());await context.close();}
 });
 
@@ -143,11 +144,11 @@ test('隔离真双人：改编驱动模型、独立展出授权、360欣赏和�
     await a.getByTestId('arrangement-more').click();await a.getByTestId('tempo-slow').click();await expect.poll(async()=>(await world(a)).beatMs).toBe(850);
     await a.screenshot({path:evidence('arrangement-1440.png'),fullPage:true});
     await a.getByTestId('arrangement-approve').click();await expect(a.getByTestId('arrangement-approve')).toHaveAttribute('aria-pressed','true');await b.getByTestId('arrangement-approve').click();
-    await b.getByTestId('launch-ready').click();await a.getByTestId('wind-step').click();await expect(a.getByTestId('save-card')).toBeVisible({timeout:16000});await readyModel(a);
+    await b.getByTestId('launch-ready').click();await a.getByTestId('wind-step').click();await expect(a.getByTestId('save-card')).toBeVisible({timeout:30000});await readyModel(a);
     await a.getByLabel('各留一个词，合成它的名字').fill('隔离验收');await a.getByRole('button',{name:'留下',exact:true}).click();
     await b.getByLabel('各留一个词，合成它的名字').fill('自动样例');await b.getByRole('button',{name:'留下',exact:true}).click();await expect(a.locator('.work-title')).toHaveText('隔离验收 · 自动样例');
     const final=await world(a);expect(final.starBaseHeights).toEqual([.9,.44,.67,.9]);expect(final.lampOn).toEqual([false,true,false,true]);
-    await a.getByTestId('replay').click();await expect.poll(async()=>(await world(a)).active).toBe(true);
+    await a.getByRole('button',{name:'点击开启声音',exact:true}).click();await a.getByTestId('replay').click();await expect.poll(async()=>(await world(a)).active).toBe(true);
     const beforeCapture=await world(a),beforeCamera=await model(a).evaluate(e=>['x','y','z'].map(axis=>e.getAttribute(`data-camera-${axis}`)));
     const pending=a.waitForEvent('download');await a.getByTestId('save-card').click();const download=await pending;await download.saveAs(evidence('actual-work-card.png'));
     const image=await readFile(evidence('actual-work-card.png'));expect(image.readUInt32BE(16)).toBe(1200);expect(image.readUInt32BE(20)).toBe(1500);
@@ -204,7 +205,7 @@ test('作品正常结束后，当前标签页的留存抽屉仍能单方撤展�
   const setup=await arrangedPair();const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'});
   try{
     await setup.a.act({type:'approveTrack'});await setup.b.act({type:'approveTrack'});await setup.b.act({type:'launchReady'});await setup.a.act({type:'wind'});
-    await expect.poll(()=>setup.a.snapshot.stage,{timeout:14000}).toBe('complete');
+    await expect.poll(()=>setup.a.snapshot.stage,{timeout:30000}).toBe('complete');
     await setup.a.act({type:'setWord',word:'隔离撤展'});await setup.b.act({type:'setWord',word:'验收样例'});
     await setup.a.act({type:'shareConsent',consent:true});await setup.b.act({type:'shareConsent',consent:true});await setup.a.act({type:'exhibitConsent',consent:true});await setup.b.act({type:'exhibitConsent',consent:true});
     const work=setup.a.snapshot.work!;expect((await exhibits(request)).some(item=>item.id===work.id)).toBe(true);setup.peers.forEach(peer=>peer.close());

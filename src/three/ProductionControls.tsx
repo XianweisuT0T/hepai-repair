@@ -104,6 +104,7 @@ export default function ProductionControls({props,controlsRef,dragging,moving,ho
     // OrbitControls sets touch-action itself. Restore browser scrolling in the inline mobile view.
     gl.domElement.style.touchAction=props.pageScroll?'pan-y pinch-zoom':'none';
     if(controlsRef.current)controlsRef.current.enabled=observing()&&!moving.current&&!dragging.current;
+    if(host.current)host.current.dataset.cameraMode=observing()?'observe':'fixed';
   },[props.pageScroll,gl,controlsRef,dragging,moving]);
   useFrame(()=>{
     const controls=controlsRef.current;if(!controls)return;
