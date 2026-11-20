@@ -5,6 +5,12 @@ import './museum.css';
 import { IS_STATIC_DEMO } from './runtimeMode';
 import { CURATED_EXHIBITS, type CuratedExhibit } from './curatedExhibits';
 import CuratedViewer, { type MuseumPlayback } from './CuratedViewer';
+import moonForest from './assets/museum/moon-forest.webp';
+import starLetter from './assets/museum/star-letter.webp';
+import morningPrelude from './assets/museum/morning-prelude.webp';
+
+// Still frames from the actual scene keep browsing light; opening an exhibit loads its 3D view.
+const exhibitImages: Record<string, string> = { 'moon-forest': moonForest, 'star-letter': starLetter, 'morning-prelude': morningPrelude };
 
 interface MuseumProps {
   onBack: () => void;
@@ -96,6 +102,7 @@ export default function Museum({ onBack, onCreate, onSelect, onPersonalWorks, cr
   const [works, setWorks] = useState<PublicWork[]>([]);
   const [attempt, setAttempt] = useState(0);
   const [curated, setCurated] = useState<CuratedExhibit | null>(null);
+  const [selected, setSelected] = useState(CURATED_EXHIBITS[0]);
   const browsePosition = useRef(0);
   const stop = useRef(playback.onStop);
   stop.current = playback.onStop;
@@ -137,21 +144,32 @@ export default function Museum({ onBack, onCreate, onSelect, onPersonalWorks, cr
     </nav>
     <header className="museum-heading">
       <h1>合拍音乐盒博物馆</h1>
-      <p>一个小小展柜，放下两个人一起修好的旋律。</p>
+      <p>同一只音乐盒，也可以有不同的合拍。</p>
     </header>
 
     <section className="museum-curated" aria-labelledby="curated-heading">
-      <div className="museum-collection-heading"><h2 id="curated-heading">同一只盒子，不同的合拍</h2><span>3 件策展示例</span></div>
-      <p className="museum-browse-note">先听听声音如何改变纸雕舞台。这些是设计示例，不代表真实参与者的作品。</p>
-      <ul className="museum-shelf">
-        {CURATED_EXHIBITS.map(exhibit => <li className="museum-exhibit" key={exhibit.id} data-testid={`curated-card-${exhibit.id}`}>
-          <div className="museum-object" aria-hidden="true"><MusicBox stage="preview" previewState="restored" view="box" finish={exhibit.finish} notes={exhibit.score.tracks.A.notes} stamps={exhibit.stamps} workTitle={exhibit.title} /><div className="museum-plinth" /></div>
-          <article className="museum-label"><h3>{exhibit.title}</h3><p className="curated-disclosure">策展示例 · 非真实用户共创作品</p><p className="curated-description">{exhibit.description}</p>
-            <div className="museum-score"><Track label="A" track={exhibit.score.tracks.A} /><Track label="B" track={exhibit.score.tracks.B} /></div>
-            <button className="museum-open" data-testid={`curated-open-${exhibit.id}`} onClick={() => openCurated(exhibit)}>欣赏与试听 <DirectionIcon /></button>
-          </article>
+      <h2 id="curated-heading" className="museum-section-label">选一段旋律，慢慢听</h2>
+      <ul className="museum-selections" aria-label="选择策展示例">
+        {CURATED_EXHIBITS.map(exhibit => <li key={exhibit.id} data-testid={`curated-card-${exhibit.id}`}>
+          <button type="button" data-testid={`curated-select-${exhibit.id}`} aria-pressed={selected.id === exhibit.id} onClick={() => setSelected(exhibit)}>
+            <StampIcon stamp={exhibit.stamps.A} size={23} /><span>{exhibit.title}</span>
+          </button>
         </li>)}
       </ul>
+      <div className="museum-feature">
+        <button type="button" className="museum-feature-object" onClick={() => openCurated(selected)} aria-label={`转着看看：${selected.title}`}>
+          <img key={selected.id} src={exhibitImages[selected.id]} width="900" height="603" alt={`${selected.title}：木质音乐盒里的月亮、森林与黄铜机芯`} />
+          <span>转着看看 <DirectionIcon /></span>
+        </button>
+        <article className="museum-feature-caption" aria-live="polite" aria-atomic="true">
+          <h3>{selected.title}</h3>
+          <p className="museum-feature-description">{selected.description}</p>
+          <p className="museum-feature-material">{selected.finish === 'walnut' ? '胡桃木' : '樱桃木'} · 黄铜 / {selected.score.tempo === 'slow' ? '舒缓' : '轻快'}</p>
+          <div className="museum-score"><Track label="A" track={selected.score.tracks.A} /><Track label="B" track={selected.score.tracks.B} /></div>
+          <button type="button" className="museum-primary museum-feature-open" data-testid={`curated-open-${selected.id}`} onClick={() => openCurated(selected)}>欣赏与试听 <DirectionIcon /></button>
+          <p className="museum-example-note">策展示例 · 非真实用户共创作品</p>
+        </article>
+      </div>
     </section>
     <h2 className="museum-community-title">共同作品展柜</h2>
 
@@ -168,17 +186,14 @@ export default function Museum({ onBack, onCreate, onSelect, onPersonalWorks, cr
     </section>}
 
     {state === 'ready' && works.length === 0 && <section className="museum-empty" data-testid="museum-empty" aria-labelledby="museum-empty-title">
-      <div className="museum-empty-stage" aria-hidden="true">
-        <div className="museum-empty-space" />
-        <div className="museum-empty-plate">为下一次合拍，留个位置</div>
-        <div className="museum-empty-shelf" />
-      </div>
       <div className="museum-empty-invitation">
-        <h2 id="museum-empty-title">{IS_STATIC_DEMO?<>小展台，<br />为未来的合拍留个位置。</>:<>第一只音乐盒，<br />可以由你们一起修好。</>}</h2>
-        <p>{IS_STATIC_DEMO?<>当前版本开放单人体验，暂未开放公共作品陈列。<br />你完成的旋律会留在当前浏览器，也可以下载图片。</>:<>这里还没有共同同意展出的作品。<br />小展台先空着，等一段属于你们的旋律。</>}</p>
+        <h2 id="museum-empty-title">下一段旋律，留给你。</h2>
+        <p>{IS_STATIC_DEMO?'公共展柜暂未开放。先体验修理，把自己的旋律留在浏览器里，或下载成作品卡。':'这里还没有共同同意展出的作品。和伙伴修好一只，再决定是否让它在这里响起。'}</p>
+        <p className="museum-consent-note">{IS_STATIC_DEMO?'单人体验作品不会自动公开。':'只有双方分别同意，作品才会公开展出。'}</p>
+      </div>
+      <div className="museum-empty-actions">
         <button type="button" className="museum-primary" data-testid="museum-create-first" disabled={createDisabled} aria-busy={createDisabled} onClick={onCreate}>{IS_STATIC_DEMO?'先修好自己的音乐盒':'和伙伴修第一只'} <DirectionIcon /></button>
         {onPersonalWorks && <button type="button" className="museum-own-works" data-testid="museum-own-works" onClick={onPersonalWorks}>先看看我的作品</button>}
-        <p className="museum-consent-note">{IS_STATIC_DEMO?'单人体验作品不会自动公开，也不会放入公共展柜。':'修好后，先生成双方同意的只读链接，再各自同意放进展柜。'}</p>
       </div>
     </section>}
 
@@ -189,7 +204,7 @@ export default function Museum({ onBack, onCreate, onSelect, onPersonalWorks, cr
     </section>}
 
     {state === 'ready' && <footer className="museum-footer">
-      <p>{IS_STATIC_DEMO?'共同作品展柜尚未开放。上方策展示例与真实作品分开，不会自动公开你的单人作品。':'共同作品展柜中的每件作品，都由两位伙伴共同同意公开。上方策展示例为设计展示，修理时的私密反馈不会展出。'}</p>
+      <p>把一段旋律，变成一次相遇的纪念。</p>
       <span>小小修理，慢慢靠近。</span>
     </footer>}
   </main>;
