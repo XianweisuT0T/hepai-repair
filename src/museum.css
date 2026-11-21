@@ -73,41 +73,65 @@
  .curated-listening h2{font-size:25px}
 }
 @media(max-width:380px){.museum-view{padding-inline:16px}.curated-model .production-object{height:310px}}
-/* Shared wooden ledge: the objects stay visible together, with small labels below. */
-.museum-gallery-heading{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin:8px 0 32px}
-.museum-gallery-heading h2{font-family:'Songti SC','SimSun',serif;font-size:21px;font-weight:400;line-height:1.6;margin:0}
+
+/* One walnut cabinet, three lit compartments. Actual model renders have transparent surroundings. */
+.museum-gallery-heading{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin:0 0 22px}
+.museum-gallery-heading h2{font-family:'Songti SC','SimSun',serif;font-size:19px;font-weight:400;line-height:1.6;margin:0;color:#d2d8c3}
 .museum-gallery-heading p{font-size:12px;line-height:1.8;color:#bbc8b1;margin:0}
-.museum-display-shelf{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;margin:0 0 36px;padding:0}
-.museum-display{min-width:0}
-.museum-display-object{display:block;position:relative;width:100%;padding:0 0 12px;border:0;background:transparent}
-.museum-display-object img{display:block;width:100%;height:auto;aspect-ratio:900 / 603;object-fit:contain;transition:transform .25s ease-out}
-.museum-display-object:after{content:'';position:absolute;bottom:0;left:0;width:calc(100% + 28px);height:12px;background:#574334;border-top:2px solid #b89a67;border-bottom:3px solid #302d24;box-shadow:0 10px 16px #071d1855;pointer-events:none}
-.museum-display:last-child .museum-display-object:after{width:100%}
-.museum-display-object:hover img{transform:translateY(-4px)}
-.museum-display-caption{text-align:center;padding:22px 12px 0}
-.museum-display-caption h3{display:inline-flex;align-items:center;justify-content:center;gap:16px;min-height:48px;padding:8px 20px;margin:0;background:#c3a875;color:#24392d;border:1px solid #dfc68c;border-radius:2px;font-family:'Songti SC','SimSun',serif;font-size:24px;font-weight:400;line-height:1.4}
-.museum-display-caption .stamp-icon{color:#455239;flex-shrink:0}
-.museum-display-material{font-size:12px;color:#c3cdb7;margin:14px 0 8px;line-height:1.8}
-.museum-display-description{font-size:13px;color:#d0d7c3;line-height:1.9;max-width:24em;min-height:3.8em;margin:0 auto 12px;text-wrap:pretty}
-.museum-display-open{display:inline-flex;align-items:center;justify-content:center;gap:18px;min-height:44px;padding:6px 2px;border:0;border-bottom:1px solid #b89e6880;background:none;color:#e0c58e;font-size:13px}
-.museum-display-open:hover{color:#ffdf9c;border-bottom-color:#e0c58e}
+.museum-cabinet{position:relative;margin:0 0 38px;padding:0 14px;background:linear-gradient(90deg,#34291f,#564031 3%,#3a2b22 12%,#3c2c23 88%,#564031 97%,#34291f);border-radius:5px 5px 2px 2px;box-shadow:0 20px 38px #081b1855}
+.museum-cabinet-crown{display:flex;align-items:center;justify-content:center;gap:16px;height:44px;margin:0 -20px;padding:0 22px;background:linear-gradient(#604a36,#382b22);border-top:2px solid #94744d;border-bottom:3px solid #231d18;border-radius:4px 4px 0 0;color:#c5a674}
+.museum-cabinet-crown .stamp-icon{color:inherit}
+.museum-cabinet-crown span{height:1px;width:86px;background:#ae8b554f}
+.museum-display-shelf{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0;padding:0;background:none}
+.museum-display{min-width:0;position:relative;background:#172a24}
+.museum-display-object{display:block;position:relative;isolation:isolate;width:100%;height:310px;padding:14px 0 0;border:0;background:radial-gradient(ellipse at 50% 0%,#b08b4940,transparent 64%),linear-gradient(90deg,#101c18,#24332a 50%,#101c18);box-shadow:inset 0 14px 22px #0b110e88;overflow:hidden}
+.museum-display-object:before{content:'';position:absolute;inset:28px 16px 36px;border:1px solid #a2864d21;pointer-events:none;z-index:-1}
+.museum-display-object:after{content:'';position:absolute;left:0;right:0;bottom:0;height:34px;background:linear-gradient(#4c4530,#342c21);border-top:1px solid #b3996155;z-index:-1}
+.museum-cabinet-lamp{position:absolute;top:10px;left:calc(50% - 27px);width:54px;height:4px;border-radius:0 0 50% 50%;background:#efdba3;box-shadow:0 10px 24px #e9bd6860}
+.museum-display-object img{position:relative;display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 12px 8px #080d0b70);transform:translateY(12px);transition:transform .3s ease-out}
+.museum-display-object:hover img{transform:translateY(9px)}
+.museum-display-caption{position:relative;min-width:0;padding:22px 22px 16px;background:linear-gradient(110deg,#302820,#3a2e24 55%,#2e261e);border-top:5px solid #6e5338;box-shadow:inset 0 1px #b3966555;color:#e0d2ad}
+.museum-display-caption h3{display:inline-block;position:relative;font-family:'Songti SC','SimSun',serif;font-size:25px;font-weight:400;line-height:1.5;letter-spacing:.06em;color:#e4d2a7;margin:0;padding:0}
+.museum-display-material{font-size:11px;color:#c8baa0;margin:5px 0 12px;line-height:1.8}
+.museum-display-description{font-size:13px;color:#d0c6b1;line-height:1.9;min-height:3.8em;margin:0;text-wrap:pretty}
+.museum-display-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:14px;padding-top:5px;border-top:1px solid #aa8e5d33}
+.museum-display-marks{display:flex;gap:10px}.museum-display-marks .stamp-icon{color:#c0a77b}
+.museum-display-open{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:44px;padding:6px 0;border:0;background:none;color:#e0c58e;font-size:12px}
+.museum-display-open:hover{color:#ffdf9c}
+.museum-cabinet-foot{height:24px;margin:0 -20px;background:linear-gradient(#5e4934,#37281f);border-top:2px solid #8a6d46;border-bottom:4px solid #251f19;border-radius:0 0 3px 3px}
+.museum-display-object:focus-visible{outline-offset:-5px!important}
 .curated-listening .score-contribution.sounding{color:#f5d58f}
 @media(min-width:761px) and (max-width:1000px){
- .museum-display-shelf{gap:16px}
- .museum-display-object:after{width:calc(100% + 16px)}
- .museum-display-caption{padding-inline:0}
- .museum-display-caption h3{font-size:21px;gap:8px;padding-inline:12px}
+ .museum-display-object{height:250px}
+ .museum-display-caption{padding:18px 14px 12px}
+ .museum-display-caption h3{font-size:22px}
+ .museum-display-description{min-height:5.7em}
 }
 @media(max-width:760px){
- .museum-gallery-heading{display:block;margin:4px 0 24px}
- .museum-gallery-heading h2{font-size:20px}
- .museum-gallery-heading p{margin-top:8px}
- .museum-display-shelf{grid-template-columns:1fr;gap:40px;margin-bottom:32px}
- .museum-display{width:100%;max-width:440px;margin-inline:auto}
- .museum-display-object:after{width:100%}
- .museum-display-caption{padding-top:20px}
- .museum-display-caption h3{font-size:23px}
- .museum-display-description{min-height:0;margin-bottom:8px}
+ .museum-gallery-heading{display:block;margin:4px 0 22px}
+ .museum-gallery-heading h2{font-size:19px}
+ .museum-gallery-heading p{margin-top:6px;font-size:11px}
+ .museum-cabinet{max-width:440px;margin:0 auto 28px;padding:0 10px}
+ .museum-cabinet-crown{margin:0 -12px;height:36px}
+ .museum-cabinet-foot{margin:0 -12px;height:20px}
+ .museum-display-shelf{grid-template-columns:1fr;gap:0}
+ .museum-display-object{height:300px}
+ .museum-display-caption{padding:18px 20px 12px}
+ .museum-display-caption h3{font-size:24px}
+ .museum-display-description{min-height:0;font-size:13px}
+ .museum-display:not(:first-child){border-top:12px solid #35281e}
+ .museum-display-bottom{margin-top:12px}
 }
-@media(prefers-reduced-motion:reduce){.museum-display-object img{transition:none}.museum-display-object:hover img{transform:none}}
-
+@media(max-width:380px){.museum-display-object{height:270px}.museum-display-caption{padding-inline:16px}}
+@media(prefers-reduced-motion:reduce){.museum-display-object img{transition:none}.museum-display-object:hover img{transform:translateY(12px)}}
+.museum-score-choices{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+.museum-score-choices button{min-height:44px;padding:7px 14px;background:transparent;color:#c9d4bb;border:1px solid #96a28166;border-radius:2px;font-size:13px}
+.museum-score-choices button[aria-pressed=true]{background:#d1bd85;color:#19372f;border-color:#d1bd85}
+.museum-start-repair{margin-top:28px}
+.museum-concept-title{font-family:'Songti SC','SimSun',serif;font-size:clamp(30px,4vw,42px);font-weight:400;margin:22px 0 8px;line-height:1.5}
+.museum-concept-note{color:#c5ceb9;font-size:13px;line-height:1.8;margin:0 0 28px}
+.museum-concept .future-commission{padding:0;border-top:0}
+.museum-concept .commission-heading,.museum-concept .commission-introduction h3{display:none}
+.museum-concept .commission-introduction{gap:24px}
+.museum-concept .commission-scope{font-size:13px}
+@media(max-width:760px){.museum-score-choices{gap:6px}.museum-score-choices button{flex:1;padding-inline:7px}.museum-concept .commission-introduction{gap:16px}}

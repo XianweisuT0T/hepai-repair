@@ -6,11 +6,18 @@ import { IS_STATIC_DEMO } from './runtimeMode';
 import { CURATED_EXHIBITS, type CuratedExhibit } from './curatedExhibits';
 import CuratedViewer, { type MuseumPlayback } from './CuratedViewer';
 import moonForest from './assets/museum/moon-forest.webp';
-import starLetter from './assets/museum/star-letter.webp';
-import morningPrelude from './assets/museum/morning-prelude.webp';
+import starInstrument from './assets/museum/star-instrument.webp';
+import prismLantern from './assets/museum/prism-lantern.webp';
+import FutureCommissions from './FutureCommissions';
+import PrismLanternCommission from './PrismLanternCommission';
 
 // Still frames from the actual scene keep browsing light; opening an exhibit loads its 3D view.
-const exhibitImages: Record<string, string> = { 'moon-forest': moonForest, 'star-letter': starLetter, 'morning-prelude': morningPrelude };
+const devices = [
+  { id: 'musicbox', title: '合拍音乐盒', image: moonForest, status: '完整体验 · 修复与共创', description: '交换线索、一起编曲，让沉默的音乐盒重新响起。', action: '欣赏与试听' },
+  { id: 'star', title: '合拍星仪', image: starInstrument, status: '拓展原型 · 信息互补', description: '一人转动星轨，一人读懂星图，把线索拼成一片星空。', action: '转动星轨' },
+  { id: 'prism', title: '合拍棱灯', image: prismLantern, status: '拓展原型 · 光影共创', description: '一人调光色，一人换剪影，让不同的选择映在同一片灯幕。', action: '试试光与影' },
+] as const;
+type ConceptDevice = 'star' | 'prism';
 
 interface MuseumProps {
   onBack: () => void;
@@ -102,19 +109,32 @@ export default function Museum({ onBack, onCreate, onSelect, onPersonalWorks, cr
   const [works, setWorks] = useState<PublicWork[]>([]);
   const [attempt, setAttempt] = useState(0);
   const [curated, setCurated] = useState<CuratedExhibit | null>(null);
+  const [concept, setConcept] = useState<ConceptDevice | null>(null);
+  const conceptTitle = useRef<HTMLHeadingElement>(null);
   const browsePosition = useRef(0);
   const stop = useRef(playback.onStop);
   stop.current = playback.onStop;
   useEffect(() => () => stop.current(), []);
+  useEffect(() => { if (concept) conceptTitle.current?.focus({ preventScroll: true }); }, [concept]);
+  function openConcept(id: ConceptDevice) {
+    playback.onStop(); browsePosition.current = window.scrollY; setConcept(id);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+  function closeConcept() {
+    const id = concept; setConcept(null);
+    requestAnimationFrame(() => {
+      document.querySelector<HTMLButtonElement>(`[data-testid="device-open-${id}"]`)?.focus({ preventScroll: true });
+      window.scrollTo({ top: browsePosition.current, behavior: 'instant' });
+    });
+  }
   function openCurated(exhibit: CuratedExhibit) {
     playback.onStop(); browsePosition.current = window.scrollY; setCurated(exhibit);
     window.scrollTo({ top: 0, behavior: 'instant' });
   }
   function closeCurated() {
-    const id = curated?.id;
     playback.onStop(); setCurated(null);
     requestAnimationFrame(() => {
-      document.querySelector<HTMLButtonElement>(`[data-testid="curated-open-${id}"]`)?.focus({ preventScroll: true });
+      document.querySelector<HTMLButtonElement>('[data-testid="curated-open-moon-forest"]')?.focus({ preventScroll: true });
       window.scrollTo({ top: browsePosition.current, behavior: 'instant' });
     });
   }
@@ -134,7 +154,19 @@ export default function Museum({ onBack, onCreate, onSelect, onPersonalWorks, cr
     return () => request.abort();
   }, [attempt]);
 
-  if (curated) return <main className="museum-view" data-testid="museum"><CuratedViewer key={curated.id} exhibit={curated} playback={playback} onBack={closeCurated} /></main>;
+  if (concept) return <main className="museum-view museum-concept" data-testid="museum">
+    <button type="button" className="museum-back" data-testid="device-back" onClick={closeConcept}><DirectionIcon back />回到装置收藏室</button>
+    <h1 ref={conceptTitle} tabIndex={-1} className="museum-concept-title">{concept === 'star' ? '合拍星仪' : '合拍棱灯'}</h1>
+    <p className="museum-concept-note">可操作的拓展原型 · 完整双人委托尚未实现</p>
+    {concept === 'star' ? <FutureCommissions standalone /> : <PrismLanternCommission standalone />}
+  </main>;
+  if (curated) return <main className="museum-view" data-testid="museum">
+    <div className="museum-score-choices" role="group" aria-label="选择音乐盒试听示例">
+      {CURATED_EXHIBITS.map(exhibit => <button type="button" key={exhibit.id} data-testid={`score-select-${exhibit.id}`} aria-pressed={curated.id === exhibit.id} onClick={() => { playback.onStop(); setCurated(exhibit); }}>{exhibit.title}</button>)}
+    </div>
+    <CuratedViewer key={curated.id} exhibit={curated} playback={playback} onBack={closeCurated} />
+    <button type="button" className="museum-primary museum-start-repair" disabled={createDisabled} onClick={onCreate}>{IS_STATIC_DEMO ? '亲手修一只 · 单人体验' : '和伙伴一起修一只'}<DirectionIcon /></button>
+  </main>;
 
   return <main className="museum-view" data-testid="museum">
     <nav className="museum-nav" aria-label="展柜导航">
@@ -142,28 +174,36 @@ export default function Museum({ onBack, onCreate, onSelect, onPersonalWorks, cr
       <button type="button" className="museum-create-link" data-testid="museum-create" disabled={createDisabled} aria-busy={createDisabled} onClick={onCreate}>{IS_STATIC_DEMO?'开始单人体验':'和伙伴修一只'} <DirectionIcon /></button>
     </nav>
     <header className="museum-heading">
-      <h1>合拍音乐盒博物馆</h1>
-      <p>同一只音乐盒，也可以有不同的合拍。</p>
+      <h1>合拍装置收藏室</h1>
+      <p>一段旋律，一片星空，一束光。不同的装置，相同的合拍。</p>
     </header>
 
     <section className="museum-curated" aria-labelledby="curated-heading">
       <div className="museum-gallery-heading">
-        <h2 id="curated-heading">在这里，听见不同的合拍</h2>
-        <p>三件策展示例 · 非真实用户共创作品</p>
+        <h2 id="curated-heading">三件装置，三种相遇</h2>
+        <p>设计系列陈列 · 非真实用户作品</p>
       </div>
+      <div className="museum-cabinet">
+      <div className="museum-cabinet-crown" aria-hidden="true"><span /><StampIcon stamp="spark" size={22} /><span /></div>
       <ul className="museum-display-shelf">
-        {CURATED_EXHIBITS.map(exhibit => <li className="museum-display" key={exhibit.id} data-testid={`curated-card-${exhibit.id}`}>
-          <button type="button" className="museum-display-object" onClick={() => openCurated(exhibit)} aria-label={`转着看看：${exhibit.title}`}>
-            <img src={exhibitImages[exhibit.id]} width="900" height="603" alt={`${exhibit.title}：木质音乐盒里的月亮、森林与黄铜机芯`} />
+        {devices.map(device => <li className="museum-display" key={device.id} data-testid={`device-card-${device.id}`}>
+          <button type="button" className="museum-display-object" onClick={() => device.id === 'musicbox' ? openCurated(CURATED_EXHIBITS[0]) : openConcept(device.id)} aria-label={`转着看看：${device.title}`}>
+            <span className="museum-cabinet-lamp" aria-hidden="true" />
+            <img src={device.image} width="1000" height="900" alt={`${device.title}的三维模型预览`} />
           </button>
           <div className="museum-display-caption">
-            <h3><StampIcon stamp={exhibit.stamps.A} size={21} />{exhibit.title}<StampIcon stamp={exhibit.stamps.B} size={21} /></h3>
-            <p className="museum-display-material">{exhibit.finish === 'walnut' ? '胡桃木' : '樱桃木'} · 黄铜 / {exhibit.score.tempo === 'slow' ? '舒缓' : '轻快'}</p>
-            <p className="museum-display-description">{exhibit.description}</p>
-            <button type="button" className="museum-display-open" data-testid={`curated-open-${exhibit.id}`} onClick={() => openCurated(exhibit)}>欣赏与试听 <DirectionIcon /></button>
+            <h3>{device.title}</h3>
+            <p className="museum-display-material">{device.status}</p>
+            <p className="museum-display-description">{device.description}</p>
+            <div className="museum-display-bottom">
+              <span className="museum-display-marks" aria-hidden="true"><StampIcon stamp={device.id === 'musicbox' ? 'crescent' : device.id === 'star' ? 'spark' : 'wave'} size={19} /></span>
+              <button type="button" className="museum-display-open" data-testid={device.id === 'musicbox' ? 'curated-open-moon-forest' : `device-open-${device.id}`} onClick={() => device.id === 'musicbox' ? openCurated(CURATED_EXHIBITS[0]) : openConcept(device.id)}>{device.action}<DirectionIcon /></button>
+            </div>
           </div>
         </li>)}
       </ul>
+      <div className="museum-cabinet-foot" aria-hidden="true" />
+      </div>
     </section>
     <h2 className="museum-community-title">共同作品展柜</h2>
 

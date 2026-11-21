@@ -18,17 +18,18 @@ async page => {
       });
       const p = await context.newPage();
       await p.goto(`${base}?museum=1`);
-      await p.locator('[data-testid^="curated-card-"]').first().waitFor();
-      check(await p.locator('[data-testid^="curated-card-"]').count() === 3, 'Expected three authored examples');
+      await p.locator('[data-testid^="device-card-"]').first().waitFor();
+      check(await p.locator('[data-testid^="device-card-"]').count() === 3, 'Expected three different devices');
       check(await p.locator('[data-work-id],canvas').count() === 0, 'List must not contain real works or WebGL scenes');
       check(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'Museum horizontal overflow');
       await p.screenshot({ path: `output/playwright/upgrade-shelf-${width}.png`, fullPage: true });
       await p.getByRole('button', { name: '点击开启声音', exact: true }).click();
       for (const id of ['moon-forest', 'star-letter', 'morning-prelude']) {
-        const exhibit = p.getByTestId(`curated-card-${id}`);
+        const exhibit = p.getByTestId('device-card-musicbox');
         await exhibit.locator('img').evaluate(img => img.decode());
         check(await exhibit.locator('img').evaluate(img => img.naturalWidth > 0), 'Exhibit render missing');
-        await p.getByTestId(`curated-open-${id}`).click();
+        await p.getByTestId('curated-open-moon-forest').click();
+        await p.getByTestId(`score-select-${id}`).click();
         await p.waitForFunction(() => document.querySelector('[data-testid="production-canvas"]')?.dataset.webgl === 'ready');
         check(await p.locator('canvas').count() === 1, 'Viewer must use only one renderer');
         const notePlates = await p.getByTestId('production-canvas').getAttribute('data-notes');
@@ -67,7 +68,27 @@ async page => {
           await p.screenshot({ path: `output/playwright/upgrade-viewer-${width}.png`, fullPage: true });
         }
         await p.getByRole('button', { name: '返回示例展柜', exact: true }).click();
-        check(await p.getByTestId(`curated-open-${id}`).evaluate(e => e === document.activeElement), 'Return focus not restored');
+        check(await p.getByTestId('curated-open-moon-forest').evaluate(e => e === document.activeElement), 'Return focus not restored');
+      }
+      for (const device of ['star', 'prism']) {
+        await p.getByTestId(`device-card-${device}`).locator('img').evaluate(img => img.decode());
+        await p.getByTestId(`device-open-${device}`).click();
+        await p.locator('[data-webgl="ready"]').waitFor();
+        check(await p.locator('canvas').count() === 1, 'Only the open device should render');
+        if (device === 'star') {
+          await p.getByTestId('star-chart-1').click();
+          check(await p.getByTestId('star-model-host').getAttribute('data-star-chart') === '1', 'Star chart switch failed');
+          await p.getByTestId('star-orbit-range').fill('90');
+          await p.waitForFunction(() => Math.abs(Number(document.querySelector('[data-testid="star-model-host"]').dataset.starOrbitAngle) - Math.PI/2) < .01);
+        } else {
+          await p.getByTestId('prism-color-1').click(); await p.getByTestId('prism-pattern-2').click();
+          check(await p.getByTestId('prism-lantern-canvas').getAttribute('data-prism-color') === '1', 'Lantern color failed');
+          check(await p.getByTestId('prism-lantern-canvas').getAttribute('data-prism-pattern') === '2', 'Lantern pattern failed');
+        }
+        check(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'Device detail overflow');
+        await p.getByTestId('device-back').click();
+        check(await p.getByTestId(`device-open-${device}`).evaluate(e => e === document.activeElement), 'Device return focus missing');
+        check(await p.locator('canvas').count() === 0, 'Device canvas must unmount on return');
       }
       results.push({ width, examples: 3, audioAndStage: true, overflow: false });
       if (width === 390) {
