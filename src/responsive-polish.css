@@ -143,16 +143,21 @@
     overscroll-behavior:auto;
   }
 }
-/* Sound settings remain reachable on narrow screens and have an explicit close action. */
-.sound-popover-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
-.sound-popover-actions button{min-height:44px;font-size:13px;color:#304a3b;border-color:#7b906c}
+/* Inline sound controls retain a 44px touch area around the slender track. */
+.site-header .sound-control{gap:4px;flex-shrink:0}
+.site-header .sound-control .icon-button{width:44px;min-width:44px;min-height:44px;padding:10px}
+.sound-volume{appearance:none;-webkit-appearance:none;width:84px;height:44px;margin:0;background:transparent;cursor:pointer;accent-color:#d6b783}
+.sound-volume::-webkit-slider-runnable-track{height:2px;border-radius:2px;background:#a7b9a3}
+.sound-volume::-moz-range-track{height:2px;border-radius:2px;background:#a7b9a3}
+.sound-volume::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:14px;height:14px;margin-top:-6px;border:1px solid #e1c897;border-radius:50%;background:#d6b783}
+.sound-volume::-moz-range-thumb{width:12px;height:12px;border:1px solid #e1c897;border-radius:50%;background:#d6b783}
+.sound-volume:hover::-webkit-slider-thumb{background:#f0d4a3}
+.sound-volume:hover::-moz-range-thumb{background:#f0d4a3}
 .lobby-next-role{width:100%;justify-content:space-between;margin-top:10px}
 @media(max-width:600px){
-  .site-header .sound-label{display:inline-flex;font-size:11px;gap:4px;min-height:44px;padding:4px}
-  .site-header .sound-control{gap:0}
+  .site-header .sound-control{gap:2px}
+  .sound-volume{width:60px}
   .site-header .header-actions{gap:4px}
-  .site-header .sound-popover{position:fixed;top:64px;right:12px;width:min(290px,calc(100vw - 24px));max-height:calc(100dvh - 100px);overflow:auto;box-sizing:border-box;padding:16px;z-index:60}
-  .sound-popover label{font-size:14px}.sound-popover input{flex:1;min-width:0;min-height:44px}.sound-popover p{font-size:13px;line-height:1.7}
   .app.in-room:has(>.lobby){padding-bottom:72px}
   .lobby{padding:16px 16px 22px;gap:16px}
   .lobby-scene h1{font-size:21px;margin:8px 0}
@@ -174,8 +179,9 @@
   .dialog p{font-size:14px;line-height:1.75}.dialog input,.dialog textarea,.dialog select{font-size:16px}
 }
 @media(max-width:370px){
-  .site-header .sound-label{font-size:10px}
-  .site-header .icon-button{width:32px;min-width:32px}
+  .sound-volume{width:44px}
+  .app.in-room .site-header{padding-inline:12px;column-gap:4px}
+  .app.in-room .site-header .brand{font-size:14px;gap:6px}
 }
 @media(max-width:600px){.app.in-room .stage-gears .workbench-object,.app.in-room .stage-launch .workbench-object{height:340px}}
 
