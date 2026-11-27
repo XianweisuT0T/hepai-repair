@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useThree, type ThreeEvent } from '@react-three/fiber';
 import { CanvasTexture, CatmullRomCurve3, FrontSide, ExtrudeGeometry, Group, LatheGeometry, MathUtils, MeshPhysicalMaterial, MeshStandardMaterial, Path, Plane, Shape, SRGBColorSpace, TubeGeometry, Vector2, Vector3 } from 'three';
-import { BeveledBox, useGeometry } from '../lab3d/Geometry';
+import { BeveledBox, roundShape, useGeometry } from '../lab3d/Geometry';
 import { useLabMaterials, type LabMaterials } from '../lab3d/materials';
 import StarInstrumentDetails, { INSTRUMENT_CONSTELLATIONS } from './StarInstrumentDetails';
 
@@ -17,8 +17,9 @@ export interface StarInstrumentProps {
 
 // Keep the complete wheel housing and rotating grip inside the top timber,
 // with a separate gap in front of the glass dome. All shaft parts share it.
-const WHEEL=new Vector3(-2.4,1.82,1.62);
-const AIM_MIN=.55,AIM_MAX=2.55;
+const WHEEL=new Vector3(-2.76,1.74,.72), WHEEL_SCALE=.77;
+const OBSERVATION_X=2.82, AIM_MIN=OBSERVATION_X-.5, AIM_MAX=OBSERVATION_X+.5;
+const AIM_TILT=.325, AIM_CENTER=new Vector3(OBSERVATION_X,1.275,.85);
 type CaptureTarget={hasPointerCapture:(id:number)=>boolean;releasePointerCapture:(id:number)=>void;setPointerCapture:(id:number)=>void};
 type Part='wheel'|'aim'|'card';
 interface Gesture {id:number;kind:Part;last:number;value:number;grab:number;x:number;y:number;moved:boolean;target:CaptureTarget}
@@ -48,12 +49,23 @@ export default function StarInstrument(props:StarInstrumentProps){
   const live=useRef(props);live.current=props;
   const gesture=useRef<Gesture|null>(null),press=useRef<{kind:Part;card:number}|null>(null),suppressClick=useRef(false);
   const aimHandle=useRef<Group>(null);
-  const wheelPlane=useRef(new Plane(new Vector3(0,0,1),-(WHEEL.z+.33)));
+  const wheelPlane=useRef(new Plane(new Vector3(0,0,1),-(WHEEL.z+.33*WHEEL_SCALE)));
   const aimPlane=useRef(new Plane(new Vector3(0,0,1),-1.36)),hit=useRef(new Vector3());
   const back=useGeometry(()=>new ExtrudeGeometry(arch(4,1.02,2.75),{depth:.095,bevelEnabled:true,bevelSegments:3,bevelSize:.025,bevelThickness:.018,curveSegments:64}),[]);
   const backInset=useGeometry(()=>new ExtrudeGeometry(arch(3.88,1.08,2.75),{depth:.025,bevelEnabled:false,curveSegments:64}),[]);
-  const housing=useGeometry(()=>new ExtrudeGeometry(arch(1.84,.81,1.77),{depth:.19,bevelEnabled:true,bevelSegments:3,bevelSize:.045,bevelThickness:.025,curveSegments:48}),[]);
-  const card=useGeometry(()=>new ExtrudeGeometry(arch(1.23,-.69,.13),{depth:.055,bevelEnabled:true,bevelSegments:2,bevelSize:.018,bevelThickness:.01,curveSegments:48}),[]);
+  const housing=useGeometry(()=>new ExtrudeGeometry(arch(1.38,1.07,1.69),{depth:.58,bevelEnabled:true,bevelSegments:3,bevelSize:.025,bevelThickness:.018,curveSegments:48}),[]);
+  const consoleWedge=useGeometry(()=>{
+    const shape=new Shape();shape.moveTo(-.43,0);shape.lineTo(.43,0);shape.lineTo(.43,.11);shape.lineTo(-.43,.40);shape.closePath();
+    const geometry=new ExtrudeGeometry(shape,{depth:1.46,bevelEnabled:true,bevelSegments:2,bevelSize:.015,bevelThickness:.015});
+    geometry.rotateY(-Math.PI/2);geometry.translate(.73,0,0);return geometry;
+  },[]);
+  const aimFace=useGeometry(()=>{
+    const shape=roundShape(1.44,.82,.055),slot=roundShape(1.10,.10,.035);
+    shape.holes.push(new Path(slot.getPoints(24)));
+    const geometry=new ExtrudeGeometry(shape,{depth:.025,bevelEnabled:true,bevelSize:.004,bevelThickness:.003,bevelSegments:2,curveSegments:24});
+    geometry.rotateX(-Math.PI/2);return geometry;
+  },[]);
+  const card=useGeometry(()=>new ExtrudeGeometry(arch(1.08,-.55,.12),{depth:.055,bevelEnabled:true,bevelSegments:2,bevelSize:.009,bevelThickness:.006,curveSegments:48}),[]);
   const wheelRim=useGeometry(()=>{
     const shape=new Shape();shape.absarc(0,0,.79,0,Math.PI*2,false);
     const hole=new Path();hole.absarc(0,0,.59,0,Math.PI*2,true);shape.holes.push(hole);
@@ -72,10 +84,10 @@ export default function StarInstrument(props:StarInstrumentProps){
     return new LatheGeometry(profile.getPoints(72).map(p=>new Vector2(Math.max(.01,p.x),p.y)),96,0,Math.PI*2);
   },[]);
   const cardRim=useGeometry(()=>curve([
-    new Vector3(-.60,-.67,0),new Vector3(.60,-.67,0),new Vector3(.60,.13,0),
-    ...Array.from({length:31},(_,index)=>{const angle=index/30*Math.PI;return new Vector3(Math.cos(angle)*.60,.13+Math.sin(angle)*.60,0);}),
-    new Vector3(-.60,-.67,0),
-  ],.008),[]);
+    new Vector3(-.526,-.53,0),new Vector3(.526,-.53,0),new Vector3(.526,.12,0),
+    ...Array.from({length:41},(_,index)=>{const angle=index/40*Math.PI;return new Vector3(Math.cos(angle)*.526,.12+Math.sin(angle)*.526,0);}),
+    new Vector3(-.526,-.53,0),
+  ],.006),[]);
   const extra=useMemo(()=>{
     const texture=warmSphereTexture();
     const orbit=materials.brass.clone();orbit.roughness=.36;orbit.metalness=.82;
@@ -172,59 +184,68 @@ export default function StarInstrument(props:StarInstrumentProps){
     <mesh name="star-instrument-sun" position={[0,3.27,-.25]} material={extra.sun} castShadow><sphereGeometry args={[.32,48,32]}/></mesh>
     <pointLight position={[0,3.28,-.20]} color="#f0c679" intensity={.6} distance={3.7} decay={2}/>
 
-    {/* Front-facing wooden hand wheel: its spokes and handle really rotate. */}
+    {/* The wheel and its bearing are seated in a low gearbox on the left shoulder. */}
     <group name="star-instrument-wheel-assembly">
-    <mesh name="star-instrument-wheel-housing" geometry={housing} position={[WHEEL.x,0,WHEEL.z-.35]} material={materials.woodEdge} castShadow/>
-    <mesh name="star-instrument-wheel-axle" position={[WHEEL.x,WHEEL.y,WHEEL.z-.10]} rotation={[Math.PI/2,0,0]} material={materials.brassDark} castShadow><cylinderGeometry args={[.19,.19,.30,40]}/></mesh>
-    <group name="star-instrument-wheel" position={WHEEL} rotation={[0,0,props.orbitAngle]} onPointerDown={event=>begin('wheel',event)} onClick={wheelClick} onPointerOver={cursor}>
-      <mesh geometry={wheelRim} position={[0,0,-.095]} material={materials.woodEdge} castShadow/>
-      <mesh position={[0,0,.118]} material={extra.orbit} castShadow><torusGeometry args={[.715,.055,12,96]}/></mesh>
-      <mesh position={[0,0,.127]} material={materials.brassDark}><torusGeometry args={[.62,.012,8,96]}/></mesh>
-      {Array.from({length:6},(_,i)=><group key={i} rotation={[0,0,i*Math.PI/3]}><BeveledBox size={[.056,.59,.045]} position={[0,.342,.13]} radius={.018} material={extra.orbit}/></group>)}
-      <mesh position={[0,0,.15]} rotation={[Math.PI/2,0,0]} material={materials.brass} castShadow><cylinderGeometry args={[.19,.23,.13,40]}/></mesh>
-      <mesh position={[0,0,.223]} material={materials.brassDark}><torusGeometry args={[.135,.011,8,48]}/></mesh>
-      <group name="star-instrument-wheel-handle" position={[-.345,-.428,.33]}>
-        <mesh rotation={[Math.PI/2,0,0]} material={materials.wood} castShadow><cylinderGeometry args={[.088,.105,.39,32]}/></mesh>
-        <mesh position={[0,0,.201]} rotation={[Math.PI/2,0,0]} material={extra.orbit}><cylinderGeometry args={[.092,.092,.035,32]}/></mesh>
-        <mesh position={[0,0,-.17]} rotation={[Math.PI/2,0,0]} material={materials.brassDark}><cylinderGeometry args={[.10,.10,.06,24]}/></mesh>
+      <BeveledBox name="wheel-mount-foot" size={[1.46,.16,1.90]} position={[WHEEL.x,1.015,.18]} radius={.06} material={materials.woodEdge}/>
+      <BeveledBox size={[1.40,.025,1.84]} position={[WHEEL.x,1.102,.18]} radius={.035} material={materials.brassDark}/>
+      <mesh name="star-instrument-wheel-housing" geometry={housing} position={[WHEEL.x,0,.02]} material={materials.wood} castShadow/>
+      <mesh position={[WHEEL.x,WHEEL.y,.631]} rotation={[Math.PI/2,0,0]} material={extra.backdrop}><cylinderGeometry args={[.57,.57,.014,64]}/></mesh>
+      <mesh name="star-instrument-wheel-axle" position={[WHEEL.x,WHEEL.y,.64]} rotation={[Math.PI/2,0,0]} material={materials.brassDark} castShadow><cylinderGeometry args={[.145,.145,.42,40]}/></mesh>
+      {[-.57,.57].map(dx=><mesh key={dx} position={[WHEEL.x+dx,1.12,.95]} material={materials.brass}><cylinderGeometry args={[.035,.035,.016,16]}/></mesh>)}
+      <group name="star-instrument-wheel" position={WHEEL} scale={WHEEL_SCALE} rotation={[0,0,props.orbitAngle]} onPointerDown={event=>begin('wheel',event)} onClick={wheelClick} onPointerOver={cursor}>
+        <mesh geometry={wheelRim} position={[0,0,-.095]} material={materials.woodEdge} castShadow/>
+        <mesh position={[0,0,.118]} material={extra.orbit} castShadow><torusGeometry args={[.715,.055,12,96]}/></mesh>
+        <mesh position={[0,0,.127]} material={materials.brassDark}><torusGeometry args={[.62,.012,8,96]}/></mesh>
+        {Array.from({length:6},(_,i)=><group key={i} rotation={[0,0,i*Math.PI/3]}><BeveledBox size={[.056,.59,.045]} position={[0,.342,.13]} radius={.018} material={extra.orbit}/></group>)}
+        <mesh position={[0,0,.15]} rotation={[Math.PI/2,0,0]} material={materials.brass} castShadow><cylinderGeometry args={[.19,.23,.13,40]}/></mesh>
+        <mesh position={[0,0,.223]} material={materials.brassDark}><torusGeometry args={[.135,.011,8,48]}/></mesh>
+        <group name="star-instrument-wheel-handle" position={[-.345,-.428,.33]}>
+          <mesh rotation={[Math.PI/2,0,0]} material={materials.wood} castShadow><cylinderGeometry args={[.088,.105,.39,32]}/></mesh>
+          <mesh position={[0,0,.201]} rotation={[Math.PI/2,0,0]} material={extra.orbit}><cylinderGeometry args={[.092,.092,.035,32]}/></mesh>
+          <mesh position={[0,0,-.17]} rotation={[Math.PI/2,0,0]} material={materials.brassDark}><cylinderGeometry args={[.10,.10,.06,24]}/></mesh>
+        </group>
       </group>
     </group>
-    </group>
 
-    {/* The cards are thick, staggered objects, with metal constellation inlays. */}
-    <group name="star-instrument-card-rack" position={[.20,0,0]}>
-    <BeveledBox size={[1.52,.24,1.0]} position={[2.66,1.02,-.10]} radius={.08} material={materials.woodEdge}/>
-    <BeveledBox size={[1.45,.09,.16]} position={[2.66,1.15,.41]} radius={.025} material={materials.brassDark}/>
-    {[1,2].map(index=><BeveledBox key={index} size={[1.38,.23,.24]} position={[2.66,1.02+index*.23,.31-index*.20]} radius={.025} material={materials.woodEdge}/>)}
-    {([0,1,2]as const).map(index=>{
-      const selected=index===props.constellation;
-      return <group key={index} name={`star-instrument-card-${index}`} position={[2.60+(index-1)*.10,1.62+index*.23,.34-index*.20]} rotation={[0,(index-1)*-.045,(index-1)*-.06]}
-        onPointerDown={event=>begin('card',event,index)} onClick={event=>cardClick(index,event)} onPointerOver={cursor}>
-        <mesh geometry={card} material={extra.chart} castShadow/>
-        <mesh geometry={cardRim} position={[0,0,.078]} material={selected?extra.orbit:materials.brassDark}/>
-        <CardConstellation index={index} material={selected?extra.orbit:materials.brassDark}/>
-        <mesh position={[0,.05,.076]}><boxGeometry args={[1.22,1.55,.04]}/><meshBasicMaterial transparent opacity={0} depthWrite={false}/></mesh>
-      </group>;
-    })}
-    </group>
-
-    {/* A physical dovetail-like rail and a sliding glass observation lens. */}
-    <group name="star-instrument-aim-rail" position={[1.55,1.02,2.05]} rotation={[-.27,0,0]}>
-      <BeveledBox size={[2.50,.16,.73]} radius={.065} material={materials.woodEdge}/>
-      <BeveledBox size={[2.35,.035,.62]} position={[0,.095,0]} radius={.035} material={materials.brass}/>
-      <BeveledBox size={[2.06,.022,.10]} position={[0,.119,0]} radius={.022} material={materials.brassDark}/>
-      <BeveledBox size={[2.02,.025,.035]} position={[0,.138,0]} radius={.01} material={extra.orbit}/>
-      {Array.from({length:25},(_,index)=><BeveledBox key={index} size={[.008,.005,index%4===0?.075:.035]} position={[-1.03+index/24*2.06,.117,.20]} radius={.002} material={materials.brassDark}/>)}
-      <group name="star-instrument-aim-slider" position={[-1+MathUtils.clamp(props.aim,0,1)*2,.18,0]} onPointerDown={event=>begin('aim',event)} onPointerOver={cursor}>
-        <BeveledBox size={[.27,.06,.28]} radius={.025} material={materials.brassDark}/>
-        <BeveledBox size={[.09,.23,.08]} position={[0,.13,.02]} radius={.018} material={materials.brass}/>
-        <group ref={aimHandle} name="star-instrument-aim-handle" position={[0,.38,.035]} rotation={[.08,0,0]}>
-          <mesh material={materials.brassDark} castShadow><torusGeometry args={[.216,.034,12,64]}/></mesh>
-          <mesh position={[0,0,.025]} material={extra.orbit}><torusGeometry args={[.205,.016,10,64]}/></mesh>
-          <mesh scale={[1,1,.16]} material={extra.lens} renderOrder={9}><sphereGeometry args={[.192,40,24]}/></mesh>
-          <BeveledBox size={[.29,.006,.006]} radius={.002} material={materials.brassDark}/>
-          <BeveledBox size={[.006,.29,.006]} radius={.002} material={materials.brassDark}/>
-          <mesh><sphereGeometry args={[.24,20,14]}/><meshBasicMaterial transparent opacity={0} depthWrite={false}/></mesh>
+    {/* A single right-hand station holds the stepped charts and the inclined sight. */}
+    <group name="star-instrument-observation-station">
+      <BeveledBox name="observation-station-foot" size={[1.58,.14,3.0]} position={[OBSERVATION_X,1.015,.10]} radius={.065} material={materials.woodEdge}/>
+      <BeveledBox size={[1.51,.018,2.93]} position={[OBSERVATION_X,1.09,.10]} radius={.035} material={materials.brassDark}/>
+      <BeveledBox size={[1.46,.018,2.88]} position={[OBSERVATION_X,1.104,.10]} radius={.025} material={extra.backdrop}/>
+      <group name="star-instrument-card-rack">
+        {([0,1,2]as const).map(index=>{
+          const selected=index===props.constellation;
+          const y=1.68+index*.17,z=-.40-index*.30;
+          const seatY=y-.55*Math.cos(.12),seatZ=z+.55*Math.sin(.12);
+          return <group key={index}>
+            <BeveledBox name={`chart-socket-${index}`} size={[1.22,seatY-1.06,.27]} position={[OBSERVATION_X,(seatY+1.06)/2,seatZ+.025]} radius={.018} material={materials.wood}/>
+            {[-.025,.09].map(offset=><BeveledBox key={offset} size={[1.18,.105,.035]} position={[OBSERVATION_X,seatY+.015,seatZ+offset]} radius={.009} material={selected?extra.orbit:materials.brassDark}/>)}
+            <group name={`star-instrument-card-${index}`} position={[OBSERVATION_X,y,z]} rotation={[-.12,0,0]} onPointerDown={event=>begin('card',event,index)} onClick={event=>cardClick(index,event)} onPointerOver={cursor}>
+              <mesh geometry={card} material={extra.chart} castShadow/>
+              <mesh geometry={cardRim} position={[0,0,.066]} material={selected?extra.orbit:materials.brassDark}/>
+              <CardConstellation index={index} material={selected?extra.orbit:materials.brassDark}/>
+            </group>
+          </group>;
+        })}
+      </group>
+      <mesh name="observation-console-wedge" geometry={consoleWedge} position={[OBSERVATION_X,1.07,.85]} material={materials.wood} castShadow/>
+      <group name="star-instrument-aim-rail" position={[AIM_CENTER.x,AIM_CENTER.y+.06,AIM_CENTER.z]} rotation={[AIM_TILT,0,0]}>
+        <mesh name="observation-face-with-slot" geometry={aimFace} material={materials.brass} castShadow/>
+        <BeveledBox name="observation-slot-bed" size={[1.12,.025,.12]} position={[0,-.025,0]} radius={.025} material={materials.brassDark}/>
+        {Array.from({length:17},(_,index)=><BeveledBox key={index} size={[.007,.004,index%4===0?.075:.037]} position={[-.55+index/16*1.1,.033,.23]} radius={.002} material={materials.brassDark}/>)}
+        {[-.62,.62].flatMap(x=>[-.31,.31].map(z=><mesh key={`${x}:${z}`} position={[x,.031,z]} material={materials.brassDark}><cylinderGeometry args={[.022,.022,.01,16]}/></mesh>))}
+        <group name="star-instrument-aim-slider" position={[-.5+MathUtils.clamp(props.aim,0,1),.04,0]} onPointerDown={event=>begin('aim',event)} onPointerOver={cursor}>
+          <BeveledBox size={[.18,.06,.19]} position={[0,.025,0]} radius={.018} material={materials.brassDark}/>
+          <BeveledBox name="observation-carriage-key" size={[.06,.085,.065]} position={[0,-.025,0]} radius={.009} material={materials.brassDark}/>
+          <BeveledBox size={[.065,.20,.065]} position={[0,.135,0]} radius={.014} material={materials.brass}/>
+          <group ref={aimHandle} name="star-instrument-aim-handle" position={[0,.38,0]} rotation={[-AIM_TILT,0,0]}>
+            <mesh material={materials.brassDark} castShadow><torusGeometry args={[.20,.030,12,64]}/></mesh>
+            <mesh position={[0,0,.021]} material={extra.orbit}><torusGeometry args={[.19,.012,10,64]}/></mesh>
+            <mesh scale={[1,1,.16]} material={extra.lens} renderOrder={9}><sphereGeometry args={[.175,40,24]}/></mesh>
+            <BeveledBox size={[.27,.005,.005]} radius={.002} material={materials.brassDark}/>
+            <BeveledBox size={[.005,.27,.005]} radius={.002} material={materials.brassDark}/>
+            <mesh><sphereGeometry args={[.23,20,14]}/><meshBasicMaterial transparent opacity={0} depthWrite={false}/></mesh>
+          </group>
         </group>
       </group>
     </group>
