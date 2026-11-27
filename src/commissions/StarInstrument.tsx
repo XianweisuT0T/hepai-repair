@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useThree, type ThreeEvent } from '@react-three/fiber';
-import { CanvasTexture, CatmullRomCurve3, DoubleSide, ExtrudeGeometry, Group, LatheGeometry, MathUtils, MeshPhysicalMaterial, MeshStandardMaterial, Path, Plane, Shape, SRGBColorSpace, TubeGeometry, Vector2, Vector3 } from 'three';
+import { CanvasTexture, CatmullRomCurve3, FrontSide, ExtrudeGeometry, Group, LatheGeometry, MathUtils, MeshPhysicalMaterial, MeshStandardMaterial, Path, Plane, Shape, SRGBColorSpace, TubeGeometry, Vector2, Vector3 } from 'three';
 import { BeveledBox, useGeometry } from '../lab3d/Geometry';
 import { useLabMaterials, type LabMaterials } from '../lab3d/materials';
 import StarInstrumentDetails, { INSTRUMENT_CONSTELLATIONS } from './StarInstrumentDetails';
@@ -51,6 +51,7 @@ export default function StarInstrument(props:StarInstrumentProps){
   const wheelPlane=useRef(new Plane(new Vector3(0,0,1),-(WHEEL.z+.33)));
   const aimPlane=useRef(new Plane(new Vector3(0,0,1),-1.36)),hit=useRef(new Vector3());
   const back=useGeometry(()=>new ExtrudeGeometry(arch(4,1.02,2.75),{depth:.095,bevelEnabled:true,bevelSegments:3,bevelSize:.025,bevelThickness:.018,curveSegments:64}),[]);
+  const backInset=useGeometry(()=>new ExtrudeGeometry(arch(3.88,1.08,2.75),{depth:.025,bevelEnabled:false,curveSegments:64}),[]);
   const housing=useGeometry(()=>new ExtrudeGeometry(arch(1.84,.81,1.77),{depth:.19,bevelEnabled:true,bevelSegments:3,bevelSize:.045,bevelThickness:.025,curveSegments:48}),[]);
   const card=useGeometry(()=>new ExtrudeGeometry(arch(1.23,-.69,.13),{depth:.055,bevelEnabled:true,bevelSegments:2,bevelSize:.018,bevelThickness:.01,curveSegments:48}),[]);
   const wheelRim=useGeometry(()=>{
@@ -82,7 +83,7 @@ export default function StarInstrument(props:StarInstrumentProps){
     const backdrop=materials.velvet.clone();backdrop.color.set('#173d30');backdrop.roughness=.91;
     const chart=materials.velvet.clone();chart.color.set('#243d2e');chart.roughness=.82;
     const sun=new MeshStandardMaterial({color:'#f5dfab',map:texture,emissive:'#e7bd6c',emissiveIntensity:.38,roughness:.81,metalness:0});
-    const glassMaterial=new MeshPhysicalMaterial({color:'#bdd0b9',transparent:true,opacity:.032,roughness:.15,metalness:0,clearcoat:.65,clearcoatRoughness:.20,side:DoubleSide,depthWrite:false,envMapIntensity:.7});
+    const glassMaterial=new MeshPhysicalMaterial({color:'#e5e7df',transparent:true,opacity:.012,roughness:.08,metalness:0,clearcoat:.3,clearcoatRoughness:.20,side:FrontSide,depthWrite:false,envMapIntensity:.7});
     const lens=glassMaterial.clone();lens.opacity=.25;lens.color.set('#b5c7b1');
     return{orbit,planet,backdrop,chart,sun,glassMaterial,lens,texture};
   },[materials]);
@@ -148,7 +149,9 @@ export default function StarInstrument(props:StarInstrumentProps){
     {/* The arch is a thick real backboard; the cover is a distinct curved shell. */}
     {/* The rear face includes clearance for the tilted Saturn ring and bevel,
         even when the common shaft is turned through a complete revolution. */}
-    <mesh name="star-instrument-backboard" geometry={back} position={[0,0,-2.49]} material={extra.backdrop} castShadow receiveShadow/>
+    <mesh name="star-instrument-backboard" geometry={back} position={[0,0,-2.49]} material={materials.woodEdge} castShadow receiveShadow/>
+    <mesh geometry={backInset} position={[0,0,-2.39]} material={extra.backdrop} receiveShadow/>
+    {[-1.65,1.65].map(x=><BeveledBox key={x} name="star-screen-foot" size={[.30,.14,.35]} position={[x,1,-2.43]} radius={.025} material={materials.brassDark}/>)}
     <mesh geometry={archRim} position={[0,0,-2.38]} material={extra.orbit} castShadow/>
     <mesh geometry={archRim} position={[0,0,-2.525]} material={materials.brassDark}/>
     <mesh name="star-instrument-glass" geometry={glass} position={[0,0,-.25]} material={extra.glassMaterial} renderOrder={8}/>
@@ -158,16 +161,16 @@ export default function StarInstrument(props:StarInstrumentProps){
     <mesh position={[0,1.129,-.25]} rotation={[Math.PI/2,0,0]} material={materials.brass}><torusGeometry args={[1.88,.012,8,128]}/></mesh>
 
     {/* Three differently inclined, physically round tracks with spherical planets. */}
-    <group name="star-instrument-orbits" position={[0,2.30,-.25]} rotation={[0,props.orbitAngle,0]}>
-      <OrbitRing radius={1.64} tilt={[.30,0,-.15]} planets={[[.25,.185],[3.7,.12]]} materials={materials} ringMaterial={extra.orbit} planetMaterial={extra.planet} saturn/>
-      <OrbitRing radius={1.30} tilt={[-.24,0,.18]} planets={[[1.8,.13],[4.6,.105]]} materials={materials} ringMaterial={extra.orbit} planetMaterial={extra.planet}/>
-      <OrbitRing radius={.93} tilt={[.18,0,.32]} planets={[[3.7,.11]]} materials={materials} ringMaterial={extra.orbit} planetMaterial={extra.planet}/>
+    <group name="star-instrument-orbits" position={[0,2.52,-.25]} rotation={[0,props.orbitAngle,0]}>
+      <OrbitRing radius={1.64} elevation={0} tilt={[.16,0,-.10]} planets={[[.25,.165],[3.7,.12]]} materials={materials} ringMaterial={extra.orbit} planetMaterial={extra.planet} saturn/>
+      <OrbitRing radius={1.30} elevation={.15} tilt={[-.14,0,.12]} planets={[[1.8,.13],[4.6,.105]]} materials={materials} ringMaterial={extra.orbit} planetMaterial={extra.planet}/>
+      <OrbitRing radius={.93} elevation={.30} tilt={[.13,0,.18]} planets={[[3.7,.11]]} materials={materials} ringMaterial={extra.orbit} planetMaterial={extra.planet}/>
     </group>
-    <mesh name="star-instrument-main-shaft" position={[0,1.69,-.25]} material={materials.brassDark} castShadow><cylinderGeometry args={[.061,.075,1.14,32]}/></mesh>
-    {[1.17,1.34,2.24].map((y,i)=><mesh key={y} position={[0,y,-.25]} material={extra.orbit} castShadow><cylinderGeometry args={[i===0?.30:.13,i===0?.33:.14,i===0?.08:.075,48]}/></mesh>)}
-    <mesh position={[0,2.36,-.25]} material={materials.brassDark} castShadow><cylinderGeometry args={[.20,.11,.12,48]}/></mesh>
-    <mesh name="star-instrument-sun" position={[0,2.66,-.25]} material={extra.sun} castShadow><sphereGeometry args={[.32,48,32]}/></mesh>
-    <pointLight position={[0,2.67,-.20]} color="#f0c679" intensity={.6} distance={3.7} decay={2}/>
+    <mesh name="star-instrument-main-shaft" position={[0,2.035,-.25]} material={materials.brassDark} castShadow><cylinderGeometry args={[.061,.075,1.83,32]}/></mesh>
+    {[1.17,1.34,2.91].map((y,i)=><mesh key={y} position={[0,y,-.25]} material={extra.orbit} castShadow><cylinderGeometry args={[i===0?.30:.13,i===0?.33:.14,i===0?.08:.075,48]}/></mesh>)}
+    <mesh position={[0,2.97,-.25]} material={materials.brassDark} castShadow><cylinderGeometry args={[.20,.11,.12,48]}/></mesh>
+    <mesh name="star-instrument-sun" position={[0,3.27,-.25]} material={extra.sun} castShadow><sphereGeometry args={[.32,48,32]}/></mesh>
+    <pointLight position={[0,3.28,-.20]} color="#f0c679" intensity={.6} distance={3.7} decay={2}/>
 
     {/* Front-facing wooden hand wheel: its spokes and handle really rotate. */}
     <group name="star-instrument-wheel-assembly">
@@ -229,17 +232,19 @@ export default function StarInstrument(props:StarInstrumentProps){
   </group>;
 }
 
-function OrbitRing({radius,tilt,planets,materials,ringMaterial,planetMaterial,saturn=false}:{radius:number;tilt:[number,number,number];planets:[number,number][];materials:LabMaterials;ringMaterial:MeshStandardMaterial;planetMaterial:MeshStandardMaterial;saturn?:boolean}){
+function OrbitRing({radius,elevation,tilt,planets,materials,ringMaterial,planetMaterial,saturn=false}:{radius:number;elevation:number;tilt:[number,number,number];planets:[number,number][];materials:LabMaterials;ringMaterial:MeshStandardMaterial;planetMaterial:MeshStandardMaterial;saturn?:boolean}){
   // The complete circular tubes can rotate through 360° in front of the rear
   // board. Each tube retains a round section; planets are not scaled flat.
   const depth=1;
   const geometry=useGeometry(()=>new TubeGeometry(new CatmullRomCurve3(Array.from({length:64},(_,index)=>{const angle=index/64*Math.PI*2;return new Vector3(Math.cos(angle)*radius,0,Math.sin(angle)*radius*depth);}),true),160,.018,10,true),[radius]);
-  return <group name={`star-instrument-orbit-${radius}`} rotation={tilt}>
+  return <group name={`star-instrument-orbit-${radius}`} position={[0,elevation,0]} rotation={tilt}>
+    <mesh name={`star-instrument-bearing-${radius}`} material={materials.brassDark}><cylinderGeometry args={[.12,.12,.08,24]}/></mesh>
+    {[0,1,2].map(index=><group key={index} rotation={[0,index*Math.PI*2/3,0]}><mesh name="orbit-support-spoke" position={[radius/2,0,0]} rotation={[0,0,-Math.PI/2]} material={materials.brassDark}><cylinderGeometry args={[.012,.012,radius,8]}/></mesh></group>)}
     <mesh name={`star-instrument-orbit-tube-${radius}`} geometry={geometry} material={ringMaterial} castShadow/>
     {planets.map(([angle,size],index)=><group name={`star-instrument-planet-mount-${radius}-${index}`} key={angle} position={[Math.cos(angle)*radius,0,Math.sin(angle)*radius*depth]}>
-      <mesh name={`star-instrument-planet-${radius}-${index}`} material={planetMaterial} castShadow receiveShadow><sphereGeometry args={[size,36,24]}/></mesh>
-      <mesh position={[0,-size*.82,0]} material={materials.brassDark}><cylinderGeometry args={[.032,.026,.08,16]}/></mesh>
-      {saturn&&index===0&&<group name="star-instrument-saturn-crown" rotation={[.35,0,-.22]}><mesh rotation={[Math.PI/2,0,0]} material={ringMaterial}><torusGeometry args={[size*1.6,.018,8,64]}/></mesh><mesh rotation={[Math.PI/2,0,0]} material={materials.brassDark}><torusGeometry args={[size*1.48,.005,6,64]}/></mesh></group>}
+      <mesh name={`star-instrument-planet-${radius}-${index}`} position={[0,size+.09,0]} material={planetMaterial} castShadow receiveShadow><sphereGeometry args={[size,36,24]}/></mesh>
+      <mesh name="planet-support-stem" position={[0,.07,0]} material={materials.brassDark}><cylinderGeometry args={[.025,.032,.14,16]}/></mesh>
+      {saturn&&index===0&&<group name="star-instrument-saturn-crown" position={[0,size+.09,0]} rotation={[.35,0,-.22]}><mesh rotation={[Math.PI/2,0,0]} material={ringMaterial}><torusGeometry args={[size*1.6,.018,8,64]}/></mesh><mesh rotation={[Math.PI/2,0,0]} material={materials.brassDark}><torusGeometry args={[size*1.48,.005,6,64]}/></mesh></group>}
     </group>)}
   </group>;
 }
