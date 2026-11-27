@@ -1,3 +1,4 @@
+import { FINISH_NAMES } from '../shared/finishes';
 import { useEffect, useRef, useState } from 'react';
 import type { ArrangementVersion } from '../shared/types';
 import WorkshopMusicBox from './WorkshopMusicBox';
@@ -31,7 +32,7 @@ export default function CuratedViewer({ exhibit, playback, onBack }: { exhibit: 
       </div>
       <div className="curated-listening">
         <h2>听见两种选择，如何相遇</h2><p>{exhibit.description}</p>
-        <p className="curated-material">{exhibit.finish === 'walnut' ? '胡桃木' : '樱桃木'} / {exhibit.score.tempo === 'slow' ? '舒缓节奏' : '轻快节奏'}</p>
+        <p className="curated-material">{FINISH_NAMES[exhibit.finish]} / {exhibit.score.tempo === 'slow' ? '舒缓节奏' : '轻快节奏'}</p>
         <div className="curated-parts" role="group" aria-label="选择试听声部">
           {(['together', 'A', 'B'] as const).map(value => <button key={value} aria-pressed={part === value} onClick={() => { playback.onStop(); setPart(value); }}>{value === 'together' ? '完整合奏' : value === 'A' ? '只听 A' : '只听 B'}</button>)}
         </div>

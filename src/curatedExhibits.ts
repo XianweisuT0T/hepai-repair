@@ -1,11 +1,11 @@
-import type { ArrangementVersion, Stamp } from '../shared/types';
+import type { ArrangementVersion, Finish, Stamp } from '../shared/types';
 
 /** Authored listening examples. These are never Work/PublicWork or API exhibits. */
 export interface CuratedExhibit {
   id: string;
   title: string;
   description: string;
-  finish: 'walnut' | 'cherry';
+  finish: Finish;
   stamps: { A: Stamp; B: Stamp };
   score: ArrangementVersion;
 }

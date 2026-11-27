@@ -1,3 +1,4 @@
+import { FINISH_NAMES } from '../shared/finishes';
 import type { Work } from '../shared/types';
 import { captureProductionWork } from './three/capture';
 const noteLabels={leaf:'叶',star:'星',moon:'月'};
@@ -44,11 +45,11 @@ export async function saveCard(work:Work) {
     ctx.fillText(`B 伴奏  ${sequence(tracks.B.notes)}`,600,1100);
     ctx.font='22px sans-serif';ctx.fillStyle='#bcb9a8';
     const sounds={bell:'玻璃铃',wood:'木琴',soft:'柔和钢片'};
-    ctx.fillText(`${tempo==='slow'?'慢一点':'轻快一点'} · A ${sounds[tracks.A.timbre]} / B ${sounds[tracks.B.timbre]} · ${work.finish==='walnut'?'胡桃木':'樱桃木'}`,600,1160);
+    ctx.fillText(`${tempo==='slow'?'慢一点':'轻快一点'} · A ${sounds[tracks.A.timbre]} / B ${sounds[tracks.B.timbre]} · ${FINISH_NAMES[work.finish]}`,600,1160);
   }else{
     ctx.fillText(work.notes.map(n=>noteLabels[n]).join('  —  '),600,1055);
     ctx.font='24px sans-serif';ctx.fillStyle='#bcb9a8';
-    ctx.fillText(`${work.melody==='bright'?'轻快':'舒缓'}旋律 · ${ {bell:'玻璃铃',wood:'木琴',soft:'柔和钢片'}[work.timbre]} · ${work.finish==='walnut'?'胡桃木':'樱桃木'}`,600,1120);
+    ctx.fillText(`${work.melody==='bright'?'轻快':'舒缓'}旋律 · ${ {bell:'玻璃铃',wood:'木琴',soft:'柔和钢片'}[work.timbre]} · ${FINISH_NAMES[work.finish]}`,600,1120);
   }
   const stampLabels={sprout:'嫩芽',crescent:'弯月',spark:'微星',wave:'水纹'};
   ctx.font='22px sans-serif';ctx.fillStyle='#c9bd99';

@@ -182,3 +182,37 @@
 
 .stage-gears .tool-panel:has(.parts-tray .selected)>.ask-button:not(:disabled):hover{background:#293f34;color:#f0e8cf}
 .stage-gears .tool-panel:has(.parts-tray .selected)>.ask-button>strong{color:#f2ddb1}
+
+/* The collection is reachable immediately, alongside the sound control. */
+.museum-nav{display:inline-flex;align-items:center;gap:12px;min-height:44px;padding:7px 10px;background:none;border:0;color:#d8cfaf;font-size:13px;white-space:nowrap}
+.museum-nav:hover{color:#f0d4a3}
+.museum-nav>span{font-size:18px}
+.score-world-preview{grid-template-rows:minmax(0,1fr);gap:0}
+.arrangement-finish{display:block}
+.arrangement-finish>span{display:block;margin-bottom:10px}
+.arrangement-finish .finish-picker{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.arrangement-finish .finish-picker button{justify-content:flex-start;gap:10px;min-height:46px;padding:8px 12px;border:1px solid #adb59c;border-radius:3px;background:transparent;color:#3c5342;font-size:13px}
+.arrangement-finish .finish-picker button.active{background:#c7d0b2;border-color:#536d4e;box-shadow:inset 0 0 0 1px #536d4e}
+.arrangement-finish .finish-picker i{width:20px;height:20px;border:1px solid #46584477;flex-shrink:0}
+@media(max-width:600px){
+  .site-header .museum-nav{font-size:12px;gap:6px;padding-inline:5px}
+}
+
+/* Budget the waiting view against the screen; the object takes remaining height.
+   Short windows and phones keep natural scrolling so no control is clipped. */
+@media(min-width:951px) and (min-height:640px){
+  .app.in-room:has(>.lobby){display:grid;grid-template-rows:auto minmax(0,1fr) auto;height:100dvh;min-height:0;padding-bottom:0;overflow:hidden}
+  .app.in-room:has(>.lobby)>.site-header{height:clamp(76px,10dvh,105px)}
+  .app.in-room:has(>.lobby)>.lobby{width:100%;height:100%;min-height:0;margin:0 auto;padding:clamp(16px,3dvh,36px) 5.2% 12px;gap:clamp(24px,3vw,50px);grid-template-columns:minmax(0,1fr) 350px;overflow:hidden}
+  .lobby-scene{display:flex;flex-direction:column;min-height:0}
+  .lobby-scene>h1{margin:12px 0 8px}
+  .lobby-scene>.production-object{flex:1;min-height:0;margin-top:10px}
+  .lobby-scene>.production-object .production-viewport{height:100%;min-height:0;aspect-ratio:auto}
+  .lobby>.invite-panel{min-height:0;max-height:100%;overflow-y:auto;margin:0;padding:22px 24px;scrollbar-width:thin}
+  .lobby .paper-topline{margin-bottom:16px;padding-bottom:12px}
+  .lobby .role-pair{margin-top:14px;padding-top:8px}
+  .lobby .lobby-ready{margin-top:8px;padding-top:10px}
+  .lobby-ready>.primary{margin-top:8px}
+  .lobby-ready>small{margin-top:8px}
+  .app.in-room:has(>.lobby)>.demo-toolbar{position:static;inset:auto;transform:none;height:auto;min-height:54px;width:max-content;max-width:calc(100% - 40px);margin:0 auto 12px}
+}

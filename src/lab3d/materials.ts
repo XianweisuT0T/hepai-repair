@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useMemo } from 'react';
 import { useThree } from '@react-three/fiber';
 import { CanvasTexture, DoubleSide, MeshStandardMaterial, RepeatWrapping, SRGBColorSpace } from 'three';
 import type { Finish } from '../../shared/types';
+import { FINISH_PALETTES } from '../finishes';
 
 export interface LabMaterials {
   wood: MeshStandardMaterial;
@@ -37,9 +38,9 @@ function makeWoodGrain() {
     const cloud = Math.sin(v * Math.PI * 4 + Math.sin(u * Math.PI * 2)) * 1.2;
     const grain = broad + fine + cloud + (random() - .5);
     const index = (y * canvas.width + x) * 4;
-    pixels.data[index] = 158 + grain;
-    pixels.data[index + 1] = 115 + grain * .84;
-    pixels.data[index + 2] = 80 + grain * .66;
+    pixels.data[index] = 224 + grain * 1.5;
+    pixels.data[index + 1] = 224 + grain * 1.5;
+    pixels.data[index + 2] = 224 + grain * 1.5;
     pixels.data[index + 3] = 255;
   }
   context.putImageData(pixels, 0, 0);
@@ -96,8 +97,9 @@ export function useLabMaterials(finish: Finish = 'walnut'): LabMaterials {
   // Update the shared wood colors without reallocating the grain or materials.
   // Explicit invalidation also updates a paused demand-rendered work view.
   useLayoutEffect(() => {
-    resources.materials.wood.color.set(finish === 'cherry' ? '#d3a58e' : '#b69272');
-    resources.materials.woodEdge.color.set(finish === 'cherry' ? '#a67456' : '#886144');
+    const palette=FINISH_PALETTES[finish];
+    resources.materials.wood.color.set(palette.wood);
+    resources.materials.woodEdge.color.set(palette.edge);
     invalidate();
   }, [finish, resources, invalidate]);
 

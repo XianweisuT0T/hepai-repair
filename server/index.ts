@@ -7,6 +7,7 @@ import { pathToFileURL } from 'node:url';
 import { Server, type Socket } from 'socket.io';
 import type { Action, ArrangementVersion, Command, CreateInput, Identity, Mark, Milestone, NoteSymbol, PublicWork, Result, Role, Snapshot, Stage, Stamp, Work } from '../shared/types.js';
 import { arrangementDuration, TRACK_PRESETS } from '../shared/arrangement.js';
+import { isFinish } from '../shared/finishes.js';
 import { GEARS, GEAR_ANSWERS, GEAR_BLUEPRINT, MELODIES, SLOTS } from './puzzle.js';
 import { JsonStore, type Member, type Room } from './store.js';
 
@@ -20,7 +21,7 @@ type Ack = (result: Result) => void;
 const STAGES: Stage[] = ['waiting', 'gears', 'swap', 'melody', 'arrange', 'launch', 'performance', 'complete', 'ended'];
 const IDENTITIES: Identity[] = ['A', 'B'];
 const NOTE_SYMBOLS = ['leaf', 'star', 'moon'];
-const FINISHES = ['walnut', 'cherry'];
+
 const TIMBRES = ['bell', 'wood', 'soft'];
 const STAMPS: Stamp[] = ['sprout', 'crescent', 'spark', 'wave'];
 const DEFAULT_STAMPS: Record<Identity, Stamp> = { A: 'sprout', B: 'spark' };
@@ -482,7 +483,7 @@ export function createRepairServer(options: RepairServerOptions) {
       case 'selectMelody': if (!['bright', 'calm'].includes(value.melody as string)) throw new Error('请选择轻快或舒缓旋律。'); break;
       case 'placeNote': if (!Number.isInteger(value.index) || (value.index as number) < 0 || (value.index as number) > 3 || value.symbol !== null && !NOTE_SYMBOLS.includes(value.symbol as string)) throw new Error('请选择 4 个槽位之一与有效声音片。'); break;
       case 'setTimbre': if (!TIMBRES.includes(value.timbre as string)) throw new Error('没有这种音色。'); break;
-      case 'setFinish': if (!FINISHES.includes(value.finish as string)) throw new Error('没有这种外观。'); break;
+      case 'setFinish': if (!isFinish(value.finish)) throw new Error('没有这种外观。'); break;
       case 'setWord': if (!boundedString(value.word, 8) || value.word !== '' && !WORDS.test(value.word)) throw new Error('名字请用 8 字以内的文字或数字，也可以留空。'); break;
       case 'setStamp': if (!STAMPS.includes(value.stamp as Stamp)) throw new Error('请选择提供的刻印图案。'); break;
       case 'sendNote':

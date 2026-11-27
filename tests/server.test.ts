@@ -66,6 +66,22 @@ async function prepare(a: Player, b: Player) {
   await a.act({ type: 'ready' }); await b.act({ type: 'ready' });
   await eventually(() => a.snapshot.stage === 'gears' && b.snapshot.stage === 'gears', '双方进入齿轮阶段');
 }
+test('four finishes sync to both players, survive resume, and reject unknown values', async()=>{
+  const f=await fixture();
+  try{
+    const a=await f.player(),b=await f.player();
+    await a.create();await b.join(a.snapshot.code);
+    for(const finish of ['walnut','cherry','forest','ivory'] as const){
+      await a.act({type:'setFinish',finish});
+      assert.equal(a.snapshot.finish,finish);assert.equal(b.snapshot.finish,finish);
+    }
+    const rejected=await a.command({type:'setFinish',finish:'invalid'} as unknown as Action);
+    assert.equal(rejected.ok,false);assert.equal(b.snapshot.finish,'ivory');
+    const credential={code:a.snapshot.code,token:a.token};a.close();
+    const restored=await f.player();const result=await restored.emit('resume',credential);
+    assert.equal(result.ok,true,result.error);assert.equal(restored.snapshot.finish,'ivory');
+  }finally{await f.cleanup();}
+});
 async function gears(b: Player) {
   for (let i = 1; i <= 3; i++) await b.act({ type: 'placeGear', gearId: `gear-${i}`, slotId: `slot-${i}` });
 }

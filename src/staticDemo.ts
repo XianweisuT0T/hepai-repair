@@ -1,4 +1,5 @@
 import type { Action, ArrangementState, ArrangementVersion, Command, Gear, Identity, Mark, Melody, MemberView, NoteSymbol, Result, Role, Snapshot, Stage, Stamp, Work } from '../shared/types';
+import { isFinish } from '../shared/finishes';
 import { arrangementDuration, TRACK_PRESETS } from '../shared/arrangement';
 
 /** Browser-only role demonstration. Its answers are intentionally visible in the
@@ -165,7 +166,7 @@ export function createStaticDemoTransport(receive: (snapshot: Snapshot) => void,
       case 'selectMelody': inStage('melody'); asRole('guide'); check(['bright', 'calm'].includes(action.melody), '请选择提供的旋律。'); if (s.melody !== action.melody) { s.melody = action.melody; s.notes = [null, null, null, null]; } break;
       case 'placeNote': inStage('melody'); asRole('maker'); step(); check(s.melody, '先切换到图纸师选择旋律。'); s.notes[action.index] = action.symbol; break;
       case 'setTimbre': inStage('melody'); asRole('maker'); check(['bell', 'wood', 'soft'].includes(action.timbre), '请选择提供的音色。'); s.timbre = action.timbre; state!.timbreConfirmed = true; break;
-      case 'setFinish': inStage('waiting', 'gears', 'melody', 'arrange', 'launch'); check(['walnut', 'cherry'].includes(action.finish), '请选择提供的木色。'); s.finish = action.finish; break;
+      case 'setFinish': inStage('waiting', 'gears', 'melody', 'arrange', 'launch'); check(isFinish(action.finish), '请选择提供的外观。'); s.finish = action.finish; break;
       case 'checkMelody':
         inStage('melody'); asRole('maker'); check(s.melody && s.notes.every((item, index) => item === MELODIES[s.melody!][index]), '还有声音片没有接回，请切换图纸师逐拍核对。');
         check(state!.timbreConfirmed, '请再亲手选择一种音色。');

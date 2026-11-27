@@ -68,10 +68,28 @@ async function reachArrangement(d: Driver) {
   assert.equal(d.snapshot.stage, 'arrange');
 }
 
+test('all four finishes persist through role changes and resuming the static demonstration', async () => {
+  const d=new Driver();
+  try {
+    await d.create();
+    for(const finish of ['walnut','cherry','forest','ivory'] as const){
+      await d.act({type:'setFinish',finish});
+      await d.as('B');assert.equal(d.snapshot.finish,finish);
+      const resumed=new Driver(d.storage,d.clock);
+      try{await resumed.request('resume',{code:d.snapshot.code,token:d.token});assert.equal(resumed.snapshot.finish,finish);}
+      finally{resumed.close();}
+      await d.as('A');
+    }
+    const rejected=await d.request('command',d.command({type:'setFinish',finish:'invalid'} as unknown as Action));
+    assert.equal(rejected.ok,false);assert.equal(d.snapshot.finish,'ivory');
+  } finally {d.close();}
+});
+
 test('local demonstration completes manual A/B actions and can exchange paper notes after resuming an older save', async () => {
   let d = new Driver();
   try {
     await reachArrangement(d);
+    await d.act({type:'setFinish',finish:'ivory'});
     const aTrack = structuredClone(d.snapshot.arrangement!.current.tracks.A);
     await d.act({ type: 'approveTrack' }); assert.equal(d.snapshot.arrangement!.approved.A, true);
     await d.as('B'); await d.act({ type: 'setTempo', tempo: 'gentle' });
@@ -98,6 +116,7 @@ test('local demonstration completes manual A/B actions and can exchange paper no
     assert.equal((await d.request('demoSwitch', { self: 'A' })).ok, false);
     d.clock.advance(500 + d.snapshot.performanceDurationMs!);
     assert.equal(d.snapshot.stage, 'complete'); assert.equal(d.snapshot.work!.demo, true);
+    assert.equal(d.snapshot.work!.finish,'ivory');
     assert.equal(d.snapshot.work!.shareId, undefined);
     await d.act({ type: 'setWord', word: '晚风' }); await d.act({ type: 'setStamp', stamp: 'wave' });
 

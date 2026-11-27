@@ -1,5 +1,6 @@
 import { useId, useRef, useState, useEffect } from 'react';
 import type { Finish, Gear, Identity, Mark, NoteSymbol, Stage, Stamp } from '../shared/types';
+import { FINISH_PALETTES } from './finishes';
 import { useWindingProgress } from './useWindingProgress';
 import { GearDrawing } from './GearAssembly';
 import { PaperTheatre } from './PaperTheatre';
@@ -133,14 +134,14 @@ function WindingCrank({ prefix, active, progress, started = false, enabled, onWi
   </g>;
 }
 
-function WindingCloseup({prefix,progress,started,guideReady,canWind,canArm,onWind,onArm,cherry}:{prefix:string;progress:number;started:boolean;guideReady:boolean;canWind:boolean;canArm:boolean;onWind?:()=>void;onArm?:()=>void;cherry:boolean}){
+function WindingCloseup({prefix,progress,started,guideReady,canWind,canArm,onWind,onArm,finish}:{prefix:string;progress:number;started:boolean;guideReady:boolean;canWind:boolean;canArm:boolean;onWind?:()=>void;onArm?:()=>void;finish:Finish}){
   const keyAction=(event:React.KeyboardEvent<SVGGElement>)=>{if(canArm&&!guideReady&&(event.key==='Enter'||event.key===' ')){event.preventDefault();onArm?.();}};
   const springProgress=useRef(typeof window!=='undefined'&&window.matchMedia('(prefers-reduced-motion: reduce)').matches).current?0:progress;
   const coil=Array.from({length:118},(_,index)=>{const angle=index/117*Math.PI*9;const radius=9+index/117*62;return `${index?'L':'M'}${(Math.cos(angle)*radius).toFixed(2)} ${(Math.sin(angle)*radius).toFixed(2)}`;}).join(' ');
   return <div className="musicbox-scene stage-launch is-winding-view" data-view="winding" data-parallax="off"><svg className="musicbox-svg winding-closeup-svg" viewBox="0 0 760 360" role="group" aria-label="发条与摇柄近景">
     <defs>
       <linearGradient id={`${prefix}-brass`} x1="0" y1="0" x2=".8" y2="1"><stop stopColor="#f5dfa6"/><stop offset=".24" stopColor="#c6a66d"/><stop offset=".55" stopColor="#8f7546"/><stop offset=".8" stopColor="#dcc38c"/><stop offset="1" stopColor="#957543"/></linearGradient>
-      <linearGradient id={`${prefix}-wood-front`} x1="0" y1="0" x2=".2" y2="1"><stop stopColor={cherry?'#a16b48':'#856041'}/><stop offset=".35" stopColor={cherry?'#805039':'#61452f'}/><stop offset="1" stopColor="#382d24"/></linearGradient>
+      <linearGradient id={`${prefix}-wood-front`} x1="0" y1="0" x2=".2" y2="1"><stop stopColor={FINISH_PALETTES[finish].highlight}/><stop offset=".35" stopColor={FINISH_PALETTES[finish].wood}/><stop offset="1" stopColor={FINISH_PALETTES[finish].shadow}/></linearGradient>
       <linearGradient id={`${prefix}-well`} x1="0" y1="0" x2="0" y2="1"><stop stopColor="#102920"/><stop offset=".45" stopColor="#304b3d"/><stop offset="1" stopColor="#1d352a"/></linearGradient>
       <radialGradient id={`${prefix}-spring-face`}><stop stopColor="#b2aa7a"/><stop offset=".5" stopColor="#647760"/><stop offset="1" stopColor="#223b2b"/></radialGradient>
       <filter id={`${prefix}-depth`} x="-30%" y="-30%" width="160%" height="180%"><feDropShadow dx="0" dy="10" stdDeviation="9" floodColor="#071b15" floodOpacity=".55"/></filter>
@@ -223,7 +224,7 @@ export default function MusicBox({ installed = {}, gears = [], notes = [null, nu
   const hasNotes = preview || ['melody', 'arrange', 'launch', 'performance', 'complete'].includes(stage);
   const isOpen = true; // Repair begins with the lid already open; the final moment is the mechanism coming alive.
   const linked = !preview && Object.keys(installed).length === 3 && ['gears', 'swap', 'melody', 'arrange', 'launch'].includes(stage);
-  const cherry = finish === 'cherry';
+  const palette = FINISH_PALETTES[finish];
   // A stable camera keeps gears circular; depth comes from separate physical faces.
   const depthRef = useObjectDepth(view);
   const gearPlane = view === 'box' ? .8 : .92;
@@ -234,14 +235,14 @@ export default function MusicBox({ installed = {}, gears = [], notes = [null, nu
   const safeClick = (callback: (() => void) | undefined) => (event: React.KeyboardEvent<SVGGElement>) => {
     if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); callback?.(); }
   };
-  if(view==='winding')return <WindingCloseup prefix={prefix} progress={windingProgress} started={!!windingAt} guideReady={guideReady} canWind={canWind&&!windingAt&&windingProgress<1} canArm={canArm} onWind={onWind} onArm={onArm} cherry={cherry}/>;
+  if(view==='winding')return <WindingCloseup prefix={prefix} progress={windingProgress} started={!!windingAt} guideReady={guideReady} canWind={canWind&&!windingAt&&windingProgress<1} canArm={canArm} onWind={onWind} onArm={onArm} finish={finish}/>;
   return <div ref={depthRef} className={`musicbox-scene stage-${stage} finish-${finish}${isOpen ? ' is-open' : ''}${playing ? ' is-playing' : ''}${preview ? ' is-preview' : ''}${unrepaired ? ' is-unrepaired' : ''}${linked ? ' is-linked' : ''}${view === 'mechanism' ? ' is-mechanism-view' : ''}`} data-view={view} data-preview-state={preview ? previewState : undefined}>
     <svg className="musicbox-svg" viewBox={view === 'mechanism' ? '185 300 650 240' : '0 50 1000 670'} role="group" aria-label={preview ? unrepaired ? '音乐盒待修预览' : '音乐盒外观预览' : view==='mechanism'?'音乐盒机芯近景操作区':'音乐盒修复操作区'}>
       <defs>
-        <linearGradient id={`${prefix}-wood-front`} x1="0" y1="0" x2=".2" y2="1"><stop stopColor={cherry ? '#9b6246' : '#7d513d'}/><stop offset=".23" stopColor={cherry ? '#89533b' : '#604333'}/><stop offset=".6" stopColor={cherry ? '#74452f' : '#49352d'}/><stop offset="1" stopColor={cherry ? '#5c3527' : '#382d27'}/></linearGradient>
-        <linearGradient id={`${prefix}-wood-lid`} x1="0" y1="0" x2="1" y2=".5"><stop stopColor={cherry ? '#a97855' : '#896544'}/><stop offset=".36" stopColor={cherry ? '#744830' : '#573f2d'}/><stop offset=".7" stopColor={cherry ? '#a3704c' : '#7c593b'}/><stop offset="1" stopColor={cherry ? '#734531' : '#493629'}/></linearGradient>
-        <linearGradient id={`${prefix}-wood-top`} x1="0" y1="0" x2="0" y2="1"><stop stopColor={cherry ? '#b78459' : '#a18154'}/><stop offset=".5" stopColor={cherry ? '#84573d' : '#725337'}/><stop offset="1" stopColor={cherry ? '#a2744d' : '#8e6b46'}/></linearGradient>
-        <linearGradient id={`${prefix}-wood-side`} x1="0" y1="0" x2="1" y2=".25"><stop stopColor={cherry?'#75482f':'#573d2c'}/><stop offset=".38" stopColor={cherry?'#563322':'#3f3025'}/><stop offset="1" stopColor="#241f1a"/></linearGradient>
+        <linearGradient id={`${prefix}-wood-front`} x1="0" y1="0" x2=".2" y2="1"><stop stopColor={palette.highlight}/><stop offset=".23" stopColor={palette.wood}/><stop offset=".6" stopColor={palette.edge}/><stop offset="1" stopColor={palette.shadow}/></linearGradient>
+        <linearGradient id={`${prefix}-wood-lid`} x1="0" y1="0" x2="1" y2=".5"><stop stopColor={palette.highlight}/><stop offset=".36" stopColor={palette.edge}/><stop offset=".7" stopColor={palette.wood}/><stop offset="1" stopColor={palette.shadow}/></linearGradient>
+        <linearGradient id={`${prefix}-wood-top`} x1="0" y1="0" x2="0" y2="1"><stop stopColor={palette.highlight}/><stop offset=".5" stopColor={palette.wood}/><stop offset="1" stopColor={palette.highlight}/></linearGradient>
+        <linearGradient id={`${prefix}-wood-side`} x1="0" y1="0" x2="1" y2=".25"><stop stopColor={palette.edge}/><stop offset=".38" stopColor={palette.shadow}/><stop offset="1" stopColor={palette.shadow}/></linearGradient>
         <linearGradient id={`${prefix}-well-side`} x1="0" y1="0" x2="0" y2="1"><stop stopColor="#15251e"/><stop offset=".6" stopColor="#26372a"/><stop offset="1" stopColor="#a38a59"/></linearGradient>
         <linearGradient id={`${prefix}-brass`} x1="0" y1="0" x2=".8" y2="1"><stop stopColor="#ead5a2"/><stop offset=".28" stopColor="#cfb47b"/><stop offset=".65" stopColor="#b1955f"/><stop offset="1" stopColor="#8c7043"/></linearGradient>
         <linearGradient id={`${prefix}-steel`} x1="0" y1="0" x2="1" y2="1"><stop stopColor="#778681"/><stop offset=".3" stopColor="#394945"/><stop offset=".6" stopColor="#566b62"/><stop offset="1" stopColor="#263a34"/></linearGradient>

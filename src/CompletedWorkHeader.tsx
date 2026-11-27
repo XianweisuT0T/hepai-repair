@@ -1,3 +1,4 @@
+import { FINISH_NAMES } from '../shared/finishes';
 import type { Work } from '../shared/types';
 
 /** A compact record of the actual saved work, with the object itself as the centrepiece. */
@@ -12,7 +13,7 @@ export default function CompletedWorkHeader({work,soundSummary}:{work:Work;sound
     <h2 className="work-title">{work.title}</h2>
     <p className="completion-sound">{soundSummary}</p>
     <div className="completion-caption">
-      <span>{work.finish==='walnut'?'胡桃木':'樱桃木'} · 黄铜</span>
+      <span>{FINISH_NAMES[work.finish]} · 黄铜</span>
       <time dateTime={work.completedAt}>{completed.toLocaleString('zh-CN',{month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Shanghai'})} 留存</time>
     </div>
   </section>;

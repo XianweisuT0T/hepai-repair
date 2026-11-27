@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { MusicTrack, PublicWork } from '../shared/types';
+import { FINISH_NAMES, isFinish } from '../shared/finishes';
 import MusicBox, { NoteIcon, StampIcon } from './MusicBox';
 import './museum.css';
 import { IS_STATIC_DEMO } from './runtimeMode';
@@ -47,7 +48,7 @@ function isExhibit(value: unknown): value is PublicWork {
   return typeof work.id === 'string' && !!work.id && typeof work.shareId === 'string' && !!work.shareId
     && typeof work.title === 'string' && !!work.title.trim() && work.demo === false
     && typeof work.completedAt === 'string' && Number.isFinite(Date.parse(work.completedAt))
-    && (work.finish === 'walnut' || work.finish === 'cherry')
+    && isFinish(work.finish)
     && (work.timbre === 'bell' || work.timbre === 'wood' || work.timbre === 'soft')
     && Array.isArray(work.notes) && work.notes.length === 4 && work.notes.every(symbol => noteSymbols.has(symbol))
     && (!work.stamps || (stampSymbols.has(work.stamps.A) && stampSymbols.has(work.stamps.B)))
@@ -92,7 +93,7 @@ function Exhibit({ work, onSelect }: { work: PublicWork; onSelect: MuseumProps['
           : <Track label="旋律" track={{ notes: work.notes, timbre: work.timbre }} />}
       </div>
       <div className="museum-material-and-stamps">
-        <span>{work.finish === 'cherry' ? '樱桃木' : '胡桃木'} · 黄铜</span>
+        <span>{FINISH_NAMES[work.finish]} · 黄铜</span>
         {work.stamps && <span className="museum-stamps" aria-label="两位伙伴留下的刻印">
           {(['A', 'B'] as const).map(id => <span key={id}><small>{id}</small><StampIcon stamp={work.stamps![id]} size={22} /></span>)}
         </span>}
