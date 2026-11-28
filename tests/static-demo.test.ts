@@ -68,6 +68,36 @@ async function reachArrangement(d: Driver) {
   assert.equal(d.snapshot.stage, 'arrange');
 }
 
+test('five-piece saves gain the sixth choice without losing tray order or installed gears', async () => {
+  const d = new Driver();
+  let resumed: Driver | undefined;
+  try {
+    await d.create(); await d.act({ type: 'ready' }); await d.as('B'); await d.act({ type: 'ready' });
+    await d.act({ type: 'placeGear', gearId: 'gear-1', slotId: 'slot-1' });
+    const saved = JSON.parse(d.storage.getItem(STATIC_DEMO_STORAGE_KEY)!);
+    saved.snapshot.gears = saved.snapshot.gears.filter((gear: { id: string }) => gear.id !== 'gear-6');
+    const order = saved.snapshot.gears.map((gear: { id: string }) => gear.id);
+    d.storage.setItem(STATIC_DEMO_STORAGE_KEY, JSON.stringify(saved));
+    d.close();
+    resumed = new Driver(d.storage, d.clock);
+    assert.equal((await resumed.request('resume', { code: d.snapshot.code, token: d.token })).ok, true);
+    assert.deepEqual(resumed.snapshot.gears.map(gear => gear.id), [...order, 'gear-6']);
+    assert.deepEqual(resumed.snapshot.installed, { 'slot-1': 'gear-1' });
+    assert.equal(resumed.snapshot.stage, 'gears');
+    assert.equal(resumed.snapshot.self, 'B');
+    await resumed.act({ type: 'mark', target: 'gear-6', text: '这块吗？', preview: 'gear-6' });
+    assert.equal(resumed.snapshot.marks.at(-1)?.preview, 'gear-6');
+    const wrongNotches = await resumed.request('command', resumed.command({ type: 'placeGear', gearId: 'gear-6', slotId: 'slot-2' }));
+    assert.equal(wrongNotches.ok, false);
+    assert.match(wrongNotches.error!, /大小合适.*刻痕/);
+    assert.deepEqual(resumed.snapshot.installed, { 'slot-1': 'gear-1' });
+    await resumed.act({ type: 'placeGear', gearId: 'gear-2', slotId: 'slot-2' });
+    await resumed.act({ type: 'placeGear', gearId: 'gear-3', slotId: 'slot-3' });
+    assert.equal(resumed.snapshot.stage, 'swap');
+    assert.equal(JSON.parse(d.storage.getItem(STATIC_DEMO_STORAGE_KEY)!).snapshot.gears.length, 6);
+  } finally { d.close(); resumed?.close(); }
+});
+
 test('all four finishes persist through role changes and resuming the static demonstration', async () => {
   const d=new Driver();
   try {

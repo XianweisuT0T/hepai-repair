@@ -125,7 +125,7 @@ test('真实双人：私有图纸、合作修复、权限/幂等、共同启动�
     assert.deepEqual(b.snapshot.installed, {});
     const oldVersion = b.snapshot.version;
     const order = b.snapshot.gears.map(gear => gear.id);
-    assert.equal(new Set(order).size, 5);
+    assert.equal(new Set(order).size, 6);
     assert.notDeepEqual(order.slice(0,3), ['gear-1','gear-2','gear-3'], '零件盘不能再默认按三个答案的顺序排列');
     assert.deepEqual(a.snapshot.gears, b.snapshot.gears, '房间的零件顺序两端相同');
     assert.equal((await a.command({ type:'mark', target:'gear-4', text:'这块吗？', preview:'gear-4' })).ok, false, '图纸师不能代拿零件');

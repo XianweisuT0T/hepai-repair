@@ -1,6 +1,7 @@
 import { Component, Suspense, lazy, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import OperationCue from './OperationCue';
+import { useGuideDismissed } from './apprenticeGuide';
 import MusicBox, { type MusicBoxProps } from './MusicBox';
 import type { ArrangementVersion, Gear, Role, Work } from '../shared/types';
 import type { CollaborativeSceneProps } from './three/types';
@@ -109,6 +110,7 @@ export default function WorkshopMusicBox(props:WorkshopMusicBoxProps){
   const canPoint=canInteract&&role==='guide'&&(stage==='gears'||stage==='melody');
   const canWind=canInteract&&stage==='launch'&&!!props.canWind&&!props.windingAt;
   const canArm=canInteract&&stage==='launch'&&!!props.canArm&&!props.guideReady;
+  const [guideDismissed]=useGuideDismissed(`gears:${role}`);
   const installedGearMap:Partial<Record<string,Gear>>={};
   if(stage==='preview'){
     displayGears.forEach((gear,index)=>{if(previewState==='restored'||index!==1)installedGearMap[slotIds[index]]=gear;});
@@ -119,6 +121,7 @@ export default function WorkshopMusicBox(props:WorkshopMusicBoxProps){
   const scene:CollaborativeSceneProps={
     stage,roomKey,role,view,rejectedGear:props.rejectedGear,previewState,cameraPreparing:props.cameraPreparing,pageScroll:mobile&&!expanded&&stage!=='launch',installedGearMap,gears,notes:[...displayNotes],finish:props.finish??'walnut',
     selectedGear:visiblePart,selectedNote:props.selectedNote??null,
+    tutorialSlots:stage==='gears'&&!guideDismissed&&Object.keys(installed).length===0&&canInteract&&(role==='guide'||!!props.selectedGear),
     score:props.score,playbackStartedAt:props.playbackStartedAt,playbackBeatMs:props.playbackBeatMs,playbackBeats:props.playbackBeats,playbackLoops:props.playbackLoops,
     marks:props.marks??[],playing:!!props.playing,highlightNote:props.highlightNote??null,
     windingProgress:progress,windingStarted:!!props.windingAt,guideReady:!!props.guideReady,
@@ -135,8 +138,9 @@ export default function WorkshopMusicBox(props:WorkshopMusicBoxProps){
     lidTimer.current=setTimeout(()=>setLidMoving(false),reduceMotion?50:900);
   }
   const operationGuide=<>
-        {stage==='gears'&&<OperationCue visible={lidOpen&&!cameraMoving&&!crankHint} key={`${roomKey}:gears:${role}`} memoryKey={`gears:${role}`} kind="place" done={role==='guide'?!!props.marks?.some(m=>m.target.startsWith('slot-')&&!m.preview):Object.keys(installed).length>0} text={props.rejectedGear&&props.selectedGear===props.rejectedGear.gearId?'还没咬合，先和伙伴核对一下。':role==='guide'?(delivered?'收到伙伴递来的齿轮了。对照图纸，再把槽位指给伙伴。':'你看图纸。点槽位旁的形状，把位置指给伙伴。'):props.selectedGear?(props.marks?.some(m=>m.target.startsWith('slot-')&&!m.preview)?'伙伴已指了位置，点对应槽位试装；也可以直接拖进去。':'已拿好齿轮。拿不准就点「这块吗？」；也可以直接试装。'):'你来装配。先从零件盘选一枚齿轮。'}/>}
-        {stage==='launch'&&<OperationCue visible={lidOpen&&!cameraMoving&&!crankHint} key={`${roomKey}:launch:${role}`} memoryKey={`launch:${role}`} kind={role==='maker'?'turn':'slide'} done={role==='maker'?!!props.windingAt||(props.winding??0)>0:!!props.guideReady} text={role==='maker'?'握住木柄，沿箭头转一点；也可以点按上弦。':'沿箭头拨动启动片；也可以点按拨片。'}/>}
+        {stage==='gears'&&<OperationCue visible={lidOpen&&!cameraMoving&&!crankHint} key={`${roomKey}:gears:${role}`} memoryKey={`gears:${role}`} kind="place" done={Object.keys(installed).length>0} text={props.rejectedGear&&props.selectedGear===props.rejectedGear.gearId?'还没咬合，先和伙伴核对一下。':role==='guide'?(delivered?'收到伙伴递来的齿轮了。对照图纸，再把槽位指给伙伴。':'你看图纸。点槽位旁的形状，把位置指给伙伴。'):props.selectedGear?(props.marks?.some(m=>m.target.startsWith('slot-')&&!m.preview)?'伙伴已指了位置，点对应槽位试装；也可以直接拖进去。':'已拿好齿轮。拿不准就点「这块吗？」；也可以直接试装。'):'你来装配。先从零件盘选一枚齿轮。'}/>}
+        {stage==='melody'&&<OperationCue visible={lidOpen&&!cameraMoving} key={roomKey+':melody:'+role} memoryKey={'melody:'+role} kind="place" done={notes.some(Boolean)} text={role==='guide'?'先选一段旋律，再把图纸上的声音顺序告诉伙伴。':props.selectedNote?'拿好声音片，点一个槽位放进去；也可以拖过去。':'先试听手边的声音片，再选一片放进音乐盒。'} successText="第一片声音接回来了。照着伙伴的线索继续吧。"/>}
+        {stage==='launch'&&<OperationCue visible={lidOpen&&!cameraMoving&&!crankHint} key={`${roomKey}:launch:${role}`} memoryKey={`launch:${role}`} successText="这一边已经就绪。另一双手准备好，音乐就会响起。" kind={role==='maker'?'turn':'slide'} done={role==='maker'?!!props.windingAt||(props.winding??0)>0:!!props.guideReady} text={role==='maker'?'握住木柄，沿箭头转一点；也可以点按上弦。':'沿箭头拨动启动片；也可以点按拨片。'}/>}
   </>;
   const viewport=<div className="production-viewport">
         <ModelBoundary key={retry} onFailure={failed}><Suspense fallback={<div className="production-loading" role="status">正在打开音乐盒…</div>}><CollaborativeMusicBox {...scene}/></Suspense></ModelBoundary>
@@ -152,7 +156,6 @@ export default function WorkshopMusicBox(props:WorkshopMusicBoxProps){
             </div>
           </details>
         </div>
-        {!mobile&&operationGuide}
         {!lidOpen&&(stage==='gears'||stage==='melody')&&<span className="production-lid-hint" role="status">打开盒盖后继续装配</span>}
         {cameraMoving&&<span className="production-camera-hint" role="status">{stage==='gears'?'把机芯交到你们手中…':'稍稍换个角度…'}</span>}
         {!cameraMoving&&crankHint&&<span className="production-camera-hint production-crank-hint" data-testid="winding-gesture-hint" role="status">{crankHint}</span>}
@@ -162,7 +165,7 @@ export default function WorkshopMusicBox(props:WorkshopMusicBoxProps){
       <div ref={inlineScene} style={{display:'contents'}}/>
       {createPortal(viewport,sceneMount)}
       {expanded&&<div className="production-expanded-placeholder">音乐盒正在放大欣赏</div>}
-      {mobile&&!expanded&&(stage==='gears'||stage==='launch')&&<div className="operation-guide-inline">{operationGuide}</div>}
+      {!expanded&&(stage==='gears'||stage==='melody'||stage==='launch')&&<div className="operation-guide-inline">{operationGuide}</div>}
       {mobile&&(stage==='complete'||stage==='performance'||!!work||props.allowExpand)&&<button ref={expandButton} className="production-expand" data-testid="production-expand"
         onPointerDown={event=>{expandTouch.current=event.pointerType==='touch'&&event.isPrimary?{id:event.pointerId,x:event.clientX,y:event.clientY}:null;}}
         onPointerMove={event=>{const start=expandTouch.current;if(start&&Math.hypot(event.clientX-start.x,event.clientY-start.y)>8)expandTouch.current=null;}}
@@ -182,6 +185,6 @@ export default function WorkshopMusicBox(props:WorkshopMusicBoxProps){
           {stage==='gears'?slotIds.map((id,index)=><button key={id} data-slot={id} data-testid={`slot-${id}`} disabled={!(canGears||canPoint)} onClick={()=>scene.onSlot(id)} aria-label={`${slotLabels[index]}${installedGearMap[id]?'，已安装':''}${canPoint?'，指给伙伴':'，尝试放置选中齿轮'}`}><span className={`production-slot-symbol symbol-${index}`} aria-hidden="true"/>{slotLabels[index]}{installedGearMap[id]&&<span aria-hidden="true"> ✓</span>}</button>):[0,1,2,3].map(index=><button key={index} data-note-slot={index} data-testid={`note-slot-${index}`} disabled={!(canNotes||canPoint)} onClick={()=>scene.onNoteSlot(index)} aria-label={`旋律槽${index+1}，${notes[index]?{leaf:'叶',star:'星',moon:'月'}[notes[index]!]:'空'}`}>{index+1} · {notes[index]?{leaf:'叶',star:'星',moon:'月'}[notes[index]!]:'空'}</button>)}
         </div>
       </div>}
-    </>:<><div className="production-fallback" data-testid="production-fallback" role="status"><span>{error?'3D 暂不可用，当前使用二维备用视图，工位进度仍在。':'当前使用二维备用视图。'}</span><button data-testid="production-retry-3d" onClick={()=>choose3D(true)}>{error?'重试 3D':'开启 3D'}</button></div><MusicBox {...props}/></>}
+    </>:<><div className="production-fallback" data-testid="production-fallback" role="status"><span>{error?'3D 暂不可用，当前使用二维备用视图，工位进度仍在。':'当前使用二维备用视图。'}</span><button data-testid="production-retry-3d" onClick={()=>choose3D(true)}>{error?'重试 3D':'开启 3D'}</button></div><MusicBox {...props}/><div className="operation-guide-inline">{operationGuide}</div></>}
   </div>;
 }

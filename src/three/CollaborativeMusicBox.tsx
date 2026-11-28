@@ -142,6 +142,7 @@ function Scene({props,host}:{props:CollaborativeSceneProps;host:RefObject<HTMLDi
         onPointerDown={event=>{if(slotAllowed()){event.stopPropagation();down.current[slot.id]={x:event.clientX,y:event.clientY};}}} onClick={event=>slotClick(slot.id,event)}>
         {gear&&<ProductionGear key={`${props.roomKey}:${gear.id}`} gear={gear} position={[slot.x,1.41,slot.z]} materials={materials} playing={props.playing} reduceMotion={props.reduceMotion} arriving={arrivingIds.has(gear.id)&&props.lidOpen&&openness.current>.985} index={index}/>}
         <mesh name={`slot-hit-${slot.id}`} position={[slot.x,1.42,slot.z]}><cylinderGeometry args={[.75,.75,.12,48]}/><meshBasicMaterial color="#dbc790" transparent opacity={slotAllowed()&&!gear&&props.selectedGear?.id?.length ? .07 : 0} depthWrite={false}/></mesh>
+        {props.tutorialSlots&&!gear&&<mesh name={`apprentice-ring-${slot.id}`} position={[slot.x,1.49,slot.z]} rotation={[-Math.PI/2,0,0]} raycast={()=>{}}><ringGeometry args={[.71,.725,64]}/><meshBasicMaterial color="#f0d29c" transparent opacity={.78} depthWrite={false}/></mesh>}
       </group>;
     })}
     <ProductionNotes props={props} materials={materials} canInteract={canInteract} openness={openness}/>

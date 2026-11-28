@@ -6,7 +6,8 @@ export const GEARS: Gear[] = [
   { id: 'gear-2', size: 'medium', notches: 2, label: '中号 · 两道刻痕' },
   { id: 'gear-3', size: 'large', notches: 3, label: '大号 · 三道刻痕' },
   { id: 'gear-4', size: 'small', notches: 3, label: '小号 · 三道刻痕' },
-  { id: 'gear-5', size: 'large', notches: 1, label: '大号 · 一道刻痕' }
+  { id: 'gear-5', size: 'large', notches: 1, label: '大号 · 一道刻痕' },
+  { id: 'gear-6', size: 'medium', notches: 1, label: '中号 · 一道刻痕' }
 ];
 export const SLOTS = [
   { id: 'slot-1', shape: 'triangle' },

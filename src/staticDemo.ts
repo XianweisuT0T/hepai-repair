@@ -13,7 +13,8 @@ const GEARS: Gear[] = [
   { id: 'gear-2', size: 'medium', notches: 2, label: '中号 · 两道刻痕' },
   { id: 'gear-3', size: 'large', notches: 3, label: '大号 · 三道刻痕' },
   { id: 'gear-4', size: 'small', notches: 3, label: '小号 · 三道刻痕' },
-  { id: 'gear-5', size: 'large', notches: 1, label: '大号 · 一道刻痕' }
+  { id: 'gear-5', size: 'large', notches: 1, label: '大号 · 一道刻痕' },
+  { id: 'gear-6', size: 'medium', notches: 1, label: '中号 · 一道刻痕' }
 ];
 const SLOTS = [{ id: 'slot-1', shape: 'triangle' }, { id: 'slot-2', shape: 'circle' }, { id: 'slot-3', shape: 'square' }];
 const ANSWERS: Record<string, string> = { 'slot-1': 'gear-1', 'slot-2': 'gear-2', 'slot-3': 'gear-3' };
@@ -60,6 +61,16 @@ export function createStaticDemoTransport(receive: (snapshot: Snapshot) => void,
     const saved: unknown = JSON.parse(storage?.getItem(STATIC_DEMO_STORAGE_KEY) || 'null');
     if (plain(saved) && saved.schema === 1 && typeof saved.token === 'string' && plain(saved.snapshot) && saved.snapshot.mode === 'demo' && saved.snapshot.code && Array.isArray(saved.snapshot.members)) state = saved as unknown as Saved;
   } catch { /* Invalid old local data never becomes a server or real-room session. */ }
+  if (state) {
+    // Add new tray choices to existing demonstrations without resetting the repair
+    // or rearranging pieces the player has already learned to recognise.
+    const savedGears = Array.isArray(state.snapshot.gears) ? state.snapshot.gears : [];
+    const ids = [...new Set([...savedGears.filter(plain).map(gear => gear.id), ...GEARS.map(gear => gear.id)])];
+    state.snapshot.gears = ids.flatMap(id => {
+      const gear = GEARS.find(item => item.id === id);
+      return gear ? [{ ...gear }] : [];
+    });
+  }
   function get() { check(state, '请先开始单人演示。'); return state.snapshot; }
   function save() {
     check(storage, '浏览器禁止本地存储，暂时不能保存演示进度。请允许此网站使用会话存储后重试。');

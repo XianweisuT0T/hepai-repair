@@ -8,6 +8,10 @@ import './studio-v3.css';
 import './workshop3d.css';
 import './completion.css';
 import './responsive-polish.css';
+import './repair-note.css';
+import './desk-palette.css';
+import { restoreDeskPalette } from './DeskPalette';
+restoreDeskPalette();
 const MusicBox3DLab=lazy(()=>import('./lab3d/MusicBox3DLab'));
 class LabRouteBoundary extends React.Component<{children:React.ReactNode},{failed:boolean}>{
   state={failed:false};

@@ -320,7 +320,7 @@ test('两个独立浏览器真实完成合作，并保存图片、只读欣赏�
     for (const page of [a,b]) {
       await expect(page.getByTestId('gear-preview')).toBeVisible();
       await expect(production(page)).toHaveAttribute('data-preview-gear','');
-      await expect(page.getByTestId('preview-gear-name')).toContainText('三道刻痕');
+      await expect(page.getByTestId('gear-preview')).toHaveAttribute('data-gear-id','gear-4');
       await expect(page.getByTestId('preview-gear-size')).toContainText('小');
       await expect(page.getByTestId('preview-gear-notches')).toContainText('3');
       await expect(page.getByTestId('gear-preview').getByRole('img', { name: /小齿轮，3道刻痕/ })).toBeVisible();
@@ -344,10 +344,10 @@ test('两个独立浏览器真实完成合作，并保存图片、只读欣赏�
     await b.screenshot({ path: proof('refinement-preview-maker-1440x900.png'), fullPage: true });
     await b.getByTestId('gear-gear-1').click();
     // Selecting a replacement is local; the partner sees it only after an explicit handoff.
-    await expect(a.getByTestId('preview-gear-name')).toContainText('三道刻痕');
+    await expect(a.getByTestId('gear-preview')).toHaveAttribute('data-gear-id','gear-4');
     await b.getByRole('button', { name: /把选中零件递给伙伴看/ }).click();
     for (const page of [a,b]) {
-      await expect(page.getByTestId('preview-gear-name')).toContainText('一道刻痕');
+      await expect(page.getByTestId('gear-preview')).toHaveAttribute('data-gear-id','gear-1');
       await expect(page.getByTestId('preview-gear-notches')).toContainText('1');
     }
     await expect(b.getByTestId('placement-receipt')).toHaveCount(0);
@@ -593,7 +593,7 @@ test(`${viewport.width}×${viewport.height} 减少动态效果与静音下，单
     await page.getByTestId('gear-gear-4').tap();
     await page.getByRole('button', { name: /把选中零件递给伙伴看/ }).tap();
     await page.getByTestId('demo-switch').tap();
-    await expect(page.getByTestId('preview-gear-name')).toContainText('三道刻痕');
+    await expect(page.getByTestId('gear-preview')).toHaveAttribute('data-gear-id','gear-4');
     await expect(page.getByTestId('preview-gear-size')).toContainText('小');
     await expect(page.getByTestId('preview-gear-notches')).toContainText('3');
     await expect(production(page)).toHaveAttribute('data-preview-gear','');

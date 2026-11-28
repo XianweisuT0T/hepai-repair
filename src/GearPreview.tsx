@@ -50,21 +50,20 @@ export default function GearPreview({ gear, preview, response, self, disabled, i
   return <section ref={ref} className={`gear-preview ${mine ? 'is-sender' : 'is-receiver'}`} data-testid="gear-preview" data-gear-id={gear.id} aria-label={mine ? '你递出的零件近景' : '伙伴递来的零件近景'}>
     <button className="gear-preview-heading" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
       <span className="preview-hand" aria-hidden="true"><svg viewBox="0 0 28 24"><path d="M3 15h5l4-3h6c3 0 3 3 0 3h-5m-6 6h7l10-7c2-2 0-4-2-3l-4 2M3 12v11M8 15l-1 6"/><circle cx="12" cy="5" r="3.2"/><path d="M12 0v2m0 6v2M7 5h2m6 0h2"/></svg></span>
-      <span><small>{mine ? '你递到伙伴手边的' : '伙伴递到你手边的'}</small><b>{mine ? '这块吗？' : '一起看看这枚零件'}</b></span>
+      <b>{mine ? '递给伙伴的零件' : '伙伴递来的零件'}</b>
       <span className="preview-fold">{expanded ? '收起近景' : '展开近景'} <i aria-hidden="true">{expanded ? '−' : '+'}</i></span>
     </button>
     <div className="gear-preview-content" hidden={!expanded}>
       <div className="gear-inspection">
-        <div className="gear-inspection-object"><span className="inspection-corner top-left"/><span className="inspection-corner bottom-right"/><GearIcon gear={gear} size={148}/><span className="inspection-caption">黄铜机芯 · 实物近景</span></div>
+        <div className="gear-inspection-object"><span className="inspection-corner top-left"/><span className="inspection-corner bottom-right"/><GearIcon gear={gear} size={148}/></div>
         <dl className="gear-inspection-facts">
           <div><dt>尺寸</dt><dd data-testid="preview-gear-size">{sizeNames[gear.size]}</dd><span className="size-reference" aria-hidden="true">{(['small','medium','large'] as const).map(size => <i key={size} className={`${size}${gear.size === size ? ' active' : ''}`}/>)}</span></div>
-          <div><dt>轴心上方的刻痕</dt><dd data-testid="preview-gear-notches">{gear.notches} 道刻痕 <span className="notch-reference" aria-hidden="true">{Array.from({ length: gear.notches }, (_, i) => <i key={i}/>)}</span></dd></div>
+          <div><dt>刻痕</dt><dd data-testid="preview-gear-notches">{gear.notches} 道刻痕 <span className="notch-reference" aria-hidden="true">{Array.from({ length: gear.notches }, (_, i) => <i key={i}/>)}</span></dd></div>
         </dl>
       </div>
-      <p className="inspection-part-name" data-testid="preview-gear-name">{gear.label}</p>
     </div>
     <div className="gear-preview-reply" aria-live="polite">
-      {installed ? <p className="preview-confirmed">这枚已装入机芯 <span>来自工作台的安装结果</span></p>
+      {installed ? <p className="preview-confirmed">这枚已装入机芯</p>
       : confirmed ? <p className="preview-confirmed" data-testid="preview-feedback"><span>{confirmed.by===self?'你指给伙伴':'伙伴指了这里'}</span><b>{{'slot-1':'三角槽','slot-2':'圆形槽','slot-3':'方形槽'}[confirmed.slotId]}</b></p>
       : response ? <p data-testid="preview-feedback"><span>{response.by === self ? '你的回应' : '伙伴回应'}</span><b>{response.text}</b></p>
       : <p data-testid="preview-feedback"><span className="waiting-dot"/>{mine ? '已递出，等伙伴看看。' : '对照图纸，给伙伴一个回应。'}</p>}

@@ -16,6 +16,7 @@ export interface CollaborativeSceneProps {
   finish: Finish;
   selectedGear: Gear | null;
   selectedNote: NoteSymbol | null;
+  tutorialSlots?:boolean;
   marks: Mark[];
   playing: boolean;
   score?: ArrangementVersion;
